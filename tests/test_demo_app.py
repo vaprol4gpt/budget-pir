@@ -126,4 +126,7 @@ def test_open_one_section_version_keeps_current_reduction(demo):
     assert at.session_state["staged_sessions"]["geodesy"].version_id == \
         saved[make_demo.KARIER_NAME]["geodesy"]  # версия действительно открыта
     goto(at, "svodny")
-    assert at.number_input(key="obj_red_budget").value == pytest.approx(0.9)
+    # Геодезия другого объекта рядом с разделами первого — сводная не собирается
+    # (смешение объектов), но снижение, введённое оператором, остаётся прежним.
+    assert any("разных объектов" in e.value for e in at.error)
+    assert at.session_state["obj_red_budget"] == pytest.approx(0.9)

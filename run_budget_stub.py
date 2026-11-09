@@ -165,11 +165,9 @@ def main(argv=None) -> None:
             f"{'—' if module_budget.total_with_vat is None else f'{module_budget.total_with_vat:>14.2f}'} руб."
         )
 
-    print(
-        f"\nСумма базовых цен по всем модулям (справочно, разные базы "
-        f"1991/2004 г. — см. докстринг): {summary['base_total_sum']:.2f} руб."
-    )
-    print(f"Сумма 'итого с НДС' по посчитанным модулям: {summary['total_with_vat_sum']:.2f} руб.")
+    # Сумма баз разделов не печатается: базы разных лет (1991, 2004, 2000 гг.) не складываются
+    # (аудит 05.11.2026, L-Б7); итог объекта — только в текущих ценах.
+    print(f"\nСумма 'итого с НДС' по посчитанным модулям: {summary['total_with_vat_sum']:.2f} руб.")
     for vat_label in aggregator.vat_labels():
         print(f"  {vat_label}")
     with_warnings = [

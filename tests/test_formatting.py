@@ -94,3 +94,14 @@ def test_excel_number_format_fractional_unit():
 
 def test_excel_number_format_unknown_unit_defaults_to_two_decimals():
     assert excel_number_format("набл.") == "0.00"
+
+
+def test_money_text_space_thousands_comma_decimals():
+    from core.formatting import money_text
+
+    assert money_text(28449810.51) == "28 449 810,51"
+    assert money_text(12345.67) == "12 345,67"
+    assert money_text(0) == "0,00"
+    assert money_text(-1234.5) == "-1 234,50"
+    assert money_text(None) == "—"
+    assert money_text(float("nan")) == "—"

@@ -1371,7 +1371,9 @@ class EcologyModule:
         kameral_lab = estimate.get("ecology.kameral.lab")
         has_sampling = any(line_id.startswith("ecology.sampling.") for line_id in estimate)
         lab_by_rows = kameral_lab is not None and kameral_lab.kind == "B"
-        if kameral_lab is not None and not lab_by_rows and not kameral_lab.qty and has_sampling:
+        no_lab_at_all = (kameral_lab is not None and not lab_by_rows and not kameral_lab.qty
+                         and has_sampling)
+        if no_lab_at_all:
             warnings.append(
                 "Опробование введено, а лабораторные анализы — нет (ни строками на ведомости, "
                 "ни суммой «Итого лабораторные работы»): камеральная обработка лабораторных "
@@ -1417,7 +1419,9 @@ class EcologyModule:
                 f"({subbase.basis}) — основание выбора п.13/п.14 не выведено, проверьте"
             )
 
-        if not lab_by_rows:
+        # Опробование без лабораторных уже названо выше (требует ввода) — «упрощение» о той же
+        # нехватке не повторяем: оно ещё и неверно говорит о «сумме, введённой оператором».
+        if not lab_by_rows and not no_lab_at_all:
             warnings.append(
                 "Упрощение модуля относительно эталонной сметы: лабораторные анализы не введены "
                 "строками — ИТОГО лабораторных работ взят из суммы, введённой оператором, "

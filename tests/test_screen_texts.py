@@ -134,3 +134,36 @@ def test_next_step_is_named_after_confirmation(isolated_smeta_db):  # noqa: F811
     assert any(c.startswith("Дальше:") for c in _texts(at.caption))
     goto(at, "smeta")
     assert any("Дальше: следующий раздел" in c for c in _texts(at.caption))
+
+
+def test_positions_without_rate_are_one_decision():
+    no_rate = "«{}»: не найдена как расценка СБЦ-99 ни в одной смете заказчика — требуется отдельный источник цены"
+    warnings = [no_rate.format("А"), "Состав сметы — позиции листа", no_rate.format("Б")]
+    decisions, notes = split_warnings(warnings)
+    assert len(decisions) == 1 and "«А», «Б»: не найдены как расценки СБЦ-99" in decisions[0]
+    assert "требуется отдельный источник цены" in decisions[0]
+    assert notes == ["Состав сметы — позиции листа"]
+    # одна такая позиция — текст модуля без изменений
+    assert split_warnings([no_rate.format("А")]) == ([no_rate.format("А")], [])
+
+
+def test_ecology_training_object_estimate_messages():
+    """Экология учебного объекта (объёмы run_budget_stub.py, данные объекта пусты): на смете
+    три сообщения «требует решения» — позиции без расценки (одним), опробование без
+    лабораторных, начисления не заданы; «упрощение модуля» о тех же лабораторных не повторяется."""
+    import run_budget_stub as stub
+    from core.object_data import CalculationContext, ObjectData
+    from core.references import DEFAULT_DB_PATH, ReferenceBook
+    from core.stages import StagedSession, as_staged
+    from modules.ecology.module import EcologyModule
+
+    if not DEFAULT_DB_PATH.exists():
+        pytest.skip("нет data/references.sqlite")
+    refs = CalculationContext(ReferenceBook(), ObjectData())
+    session = StagedSession(as_staged(EcologyModule()))
+    session.inputs["volumes"] = stub.ECOLOGY_INPUT
+    session.confirm("volumes", refs)
+    decisions, notes = split_warnings(session.compute("estimate", refs).warnings)
+    assert len(decisions) == 3
+    assert [d.split(" ")[0] for d in decisions[1:]] == ["Опробование", "Начисления"]
+    assert not any("Упрощение модуля" in n for n in notes)

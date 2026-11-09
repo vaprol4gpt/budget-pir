@@ -411,6 +411,10 @@ class StagedSession:
     overrides: dict[str, OverrideLog] = field(default_factory=dict)
     current: str = ""
     version_id: int | None = None
+    # Шифр объекта, с данными которого последний раз подтверждён этап или открыта
+    # версия («» — не задан). Заполняет интерфейс; сводный бюджет по нему не даёт
+    # сложить разделы разных объектов (core/aggregator.py::BudgetAggregator.mixed_objects).
+    object_code: str = ""
     _snapshots: dict[str, StageResult] = field(default_factory=dict)
     _reopened: set[str] = field(default_factory=set)
 

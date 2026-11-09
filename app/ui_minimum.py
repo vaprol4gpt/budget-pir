@@ -342,10 +342,7 @@ def render_sections_table(numbers) -> None:
             "Ставки": "от бухгалтерии" if status.from_accounting else "допущения / цены",
             "Состояние": "посчитан" if result.complete else "не заполнено: " + ", ".join(result.missing),
         })
-    ui.data_table(rows, hide_index=True, column_config={
-        "Минимум, руб.": st.column_config.NumberColumn(format="localized"),
-        "Максимум, руб.": st.column_config.NumberColumn(format="localized"),
-    })
+    ui.data_table(rows, hide_index=True, money=("Минимум, руб.", "Максимум, руб."))
 
 
 def render_object_metrics(minimum, red) -> None:
@@ -401,7 +398,7 @@ def render_structure(result: CostResult) -> None:
           "Тип": a.kind, "Расчёт": line.basis}
          for a, line in zip(cost_structure(result), result.lines)],
         hide_index=True,
-        column_config={"Сумма, руб.": st.column_config.NumberColumn(format="localized")},
+        money=("Сумма, руб.",),
     )
 
 

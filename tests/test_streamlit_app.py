@@ -1033,6 +1033,101 @@ def test_budget_excludes_module_after_return_to_volume_sheet(isolated_smeta_db):
     assert any("Геология (ОИГ)" in i and "в бюджет не вошёл" in i for i in _texts(at.info))
 
 
+def _display_values(element):
+    """Что таблица показывает на экране (отображаемые значения pandas Styler) — колонка → список."""
+    import pyarrow as pa
+
+    styler = element.proto.arrow_data.styler
+    return pa.ipc.open_stream(styler.display_values).read_all().to_pydict()
+
+
+def test_money_columns_show_space_and_comma_but_stay_numbers(isolated_smeta_db):
+    """Денежные колонки страниц 4 и 5 — «12 345,67» при любом языке браузера (раньше
+    format="localized" — по языку браузера), значения — числа (сортировка по числу)."""
+    at = open_app()
+    _geology_confirmed_estimate(at)
+    goto(at, "svodny")
+    assert at.exception == []
+    element = next(d for d in at.dataframe if "Итого с НДС" in d.value.columns)
+    table, shown = element.value, _display_values(element)
+    assert table["Итого с НДС"].dtype.kind == "f"
+    total = table["Итого с НДС"].iloc[0]
+    assert shown["Итого с НДС"][0] == money_text(total)
+    assert " " in shown["Итого с НДС"][0] and "," in shown["Итого с НДС"][0]
+    assert shown["База (в ценах раздела)"][-1] == "—"  # ИТОГО: база разных лет не складывается
+    goto(at, "minimum")
+    element = next(d for d in at.dataframe if "Минимум, руб." in d.value.columns)
+    shown = _display_values(element)
+    assert shown["Максимум, руб."][0] == money_text(element.value["Максимум, руб."].iloc[0])
+    assert shown["Минимум, руб."][1] == "—"  # геофизика не начата
+
+
+def test_minimum_and_budget_pages_do_not_start_sections(isolated_smeta_db):
+    """Заход на страницы 4 и 5 не заводит сессию раздела (аудит 05.11.2026, K3: раньше
+    страница минимума создавала пустую сессию геологии)."""
+    at = open_app("obekt")
+    before = set(at.session_state["staged_sessions"])
+    for page in ("minimum", "svodny", "minimum", "svodny"):
+        goto(at, page)
+        assert at.exception == []
+        assert set(at.session_state["staged_sessions"]) == before
+    assert "cost_inputs_geology" not in at.session_state
+    # «Расчёт не начат» — у всех разделов, геология не числится начатой
+    assert any("Геология (ОИГ)" in c for c in _texts(at.caption) if c.startswith("Расчёт не начат"))
+
+
+def _set_object_code(at, code):
+    goto(at, "obekt")
+    at.text_input(key="obj_code").set_value(code)
+    at.run(timeout=30)
+    goto(at, "vedomost")
+
+
+def _geophysics_confirmed_estimate(at):
+    at.radio(key="module_choice").set_value("geophysics")
+    at.run(timeout=30)
+    at.number_input(key="field_geophysics_vez_count").set_value(80)
+    at.number_input(key="field_geophysics_mpv_count").set_value(400)
+    at.run(timeout=30)
+    at.button(key="confirm_geophysics_volumes").click()
+    at.run(timeout=30)
+    goto(at, "smeta")
+    at.button(key="confirm_geophysics_estimate").click()
+    at.run(timeout=30)
+
+
+def test_budget_refuses_sections_of_different_objects(isolated_smeta_db):
+    """Сводная не складывает разделы разных объектов (аудит 05.11.2026, смешение
+    объектов): геология подтверждена для «Т-01», геофизика — для «Т-02»."""
+    at = open_app("obekt")
+    _set_object_code(at, "Т-01")
+    _geology_confirmed_estimate(at)
+    goto(at, "vedomost")
+    _set_object_code(at, "Т-02")
+    _geophysics_confirmed_estimate(at)
+    sessions = at.session_state["staged_sessions"]
+    assert (sessions["geology"].object_code, sessions["geophysics"].object_code) == ("Т-01", "Т-02")
+
+    goto(at, "svodny")
+    assert at.exception == []
+    errors = _texts(at.error)
+    assert any("разных объектов" in e and "«Т-01»" in e and "«Т-02»" in e for e in errors)
+    assert not [d for d in at.dataframe if "Итого с НДС" in getattr(d.value, "columns", [])]
+    assert not [b for b in at.get("download_button") if b.proto.label.startswith("Скачать сводный")]
+
+
+def test_budget_of_one_object_code_is_built(isolated_smeta_db):
+    at = open_app("obekt")
+    _set_object_code(at, "Т-01")
+    _geology_confirmed_estimate(at)
+    goto(at, "vedomost")
+    _geophysics_confirmed_estimate(at)
+    goto(at, "svodny")
+    assert at.exception == []
+    assert not any("разных объектов" in e for e in _texts(at.error))
+    assert list(_budget_table(at)["Раздел"]) == ["Геология (ОИГ)", "Геофизика (ИГФИ)", "ИТОГО"]
+
+
 # --- открытие несовместимой версии, имя черновика (Э4 дорожной карты) ---
 
 

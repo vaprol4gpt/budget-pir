@@ -248,6 +248,19 @@ def test_run_budget_stub_strict_after_period_excludes_all():
     assert len(summary["excluded_from_total"]) == 5
 
 
+@needs_real_refs
+def test_run_budget_stub_prints_total_without_sum_of_bases(tmp_path, monkeypatch, capsys):
+    """Стаб не печатает сумму баз разделов (базы разных лет не складываются; аудит, L-Б7);
+    строка итога с НДС — прежняя."""
+    import run_budget_stub
+
+    monkeypatch.chdir(tmp_path)  # стаб пишет budget_output.xlsx в текущую папку
+    run_budget_stub.main(["--date", "2026-09-30"])
+    out = capsys.readouterr().out
+    assert "Сумма 'итого с НДС' по посчитанным модулям: 28680880.97 руб." in out
+    assert "Сумма базовых цен" not in out and "справочно" not in out
+
+
 def test_run_budget_stub_rejects_bad_date():
     import run_budget_stub
 

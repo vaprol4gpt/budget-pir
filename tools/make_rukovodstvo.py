@@ -9,7 +9,8 @@
 
 Оформление — дизайн-код компании (`docs/design/firm-design-code/`): цвета читаются из
 `tokens.json`, шрифты Golos Text (текст) / Manrope (заголовки) с запасным Arial,
-логотип — `app/theme/logos/`. Данных заказчика в руководстве нет (объект — «Т-01»).
+логотип — `app/theme/logos/`, если он есть (в публичной копии логотипа нет — руководство
+без него; готовое публичное руководство — `docs/rukovodstvo/public/`). Данных заказчика в руководстве нет (объект — «Т-01»).
 
 Запуск (нужен python-docx — он не в зависимостях программы; есть в work/venv_ist):
     work\\venv_ist\\Scripts\\python.exe -I tools\\make_rukovodstvo.py [--pdf]
@@ -841,7 +842,8 @@ def build_docx(out: Path = OUT_DOCX) -> Path:
 
     hp = sec.header.paragraphs[0]
     hp.paragraph_format.tab_stops.add_tab_stop(Cm(17.6), alignment=2)
-    hp.add_run().add_picture(str(LOGO), height=Cm(0.55))
+    if LOGO.exists():  # логотипа нет в публичной копии — руководство собирается без него
+        hp.add_run().add_picture(str(LOGO), height=Cm(0.55))
     font(hp.add_run("\tРуководство оператора «Бюджет ПИР»"), BODY, 8, color=MUTED)
     fp = sec.footer.paragraphs[0]
     fp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -857,7 +859,8 @@ def build_docx(out: Path = OUT_DOCX) -> Path:
     c = cover.rows[0].cells[0]
     shade(c, hexv("emerald-800"))
     p = cell_para(c)
-    p.add_run().add_picture(str(LOGO_WHITE), height=Cm(1.1))
+    if LOGO_WHITE.exists():
+        p.add_run().add_picture(str(LOGO_WHITE), height=Cm(1.1))
     white = RGBColor(0xFF, 0xFF, 0xFF)
     for text, size, bold, name, before in (
         ("Руководство оператора", 30, True, HEAD, 70),

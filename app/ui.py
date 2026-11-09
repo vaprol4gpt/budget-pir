@@ -33,7 +33,7 @@ from core.aggregator import BudgetAggregator, ModuleBudget, mobilization_base
 from core.cost import cost_input_defaults, load_cost_norms
 from core.display import split_label, split_warnings
 from core.export_excel import export_file_name, export_to_excel
-from core.formatting import decimals_for_unit, format_quantity
+from core.formatting import decimals_for_unit, format_quantity, money_text as format_money
 from core.models import (
     PLACEMENT_AFTER_INDEX,
     PLACEMENT_BEFORE_INDEX,
@@ -173,10 +173,9 @@ def page_path(page_key):
 
 
 def money_text(value):
-    """Рубли с разделителями разрядов и копейками: «28 449 810,51»; None — «—»."""
-    if value is None:
-        return "—"
-    return f"{value:,.2f}".replace(",", " ").replace(".", ",")
+    """Рубли с разделителями разрядов и копейками: «28 449 810,51»; None — «—»
+    (одно правило с денежными колонками таблиц — core/formatting.py::money_text)."""
+    return format_money(value)
 
 
 def rub(value):
@@ -771,12 +770,26 @@ NUMERIC_COLUMN_HINTS = (
 )
 
 
-def data_table(data, **kwargs):
+def data_table(data, money=(), **kwargs):
     """Таблица по дизайн-коду (components/DataTable.md): метки колонок ПРОПИСНЫМИ, числа —
     по правому краю. Сами данные и названия колонок не меняются (по ним читают тесты и
-    выгрузка) — только подписи на экране (column_config). Остальное — как у st.dataframe."""
+    выгрузка) — только подписи на экране (column_config). Остальное — как у st.dataframe.
+
+    `money` — денежные колонки: на экране «12 345,67» (core/formatting.py::money_text)
+    при любом языке браузера, а значения остаются числами — сортировка по числу. Формат
+    `NumberColumn` так не умеет («localized» — по языку браузера, printf — только запятая
+    между разрядами), поэтому показ — через отображаемые значения pandas Styler; формат у
+    этих колонок в column_config не задаётся (он перекрыл бы Styler)."""
     columns = list(data[0]) if isinstance(data, list) and data and isinstance(data[0], dict) else []
     config = dict(kwargs.pop("column_config", None) or {})
+    money = [name for name in money if name in columns]
+    if money:
+        # Явный импорт модуля Styler: по нему PyInstaller кладёт в exe jinja2 и шаблоны
+        # pandas (hook-pandas.io.formats.style); через `DataFrame.style` он их не видит.
+        import pandas as pd
+        from pandas.io.formats.style import Styler
+
+        data = Styler(pd.DataFrame(data)).format(format_money, subset=money, na_rep="—")
     for name in columns:
         base = config.get(name)
         if base is None:
@@ -954,6 +967,7 @@ def build_budget_from_sessions():
                 mobilization_base=mobilization_base(dict(result.lines)),
                 notes=missing_accrual_notes(session, last_key),
                 assumptions=len(found),
+                object_code=getattr(session, "object_code", ""),
             )
         )
     st.session_state["_budget_assumptions"] = assumptions
@@ -1214,6 +1228,11 @@ def render_budget_section():
         st.caption(f"Объект: {' — '.join(v for v in (object_data.code, object_data.name) if v)}")
     for warning in object_data.warnings():
         st.warning(warning)
+    mixed = aggregator.mixed_objects()
+    if mixed:
+        # Требует решения оператора: итог разных объектов показывать и выгружать нельзя.
+        st.error(mixed)
+        return
 
     # Себестоимость геологии — тем же путём, что страница «4. Минимальный бюджет»
     # (ui_minimum.geology_numbers: сохранённый ввод + виджеты), один расчёт на прогон:
@@ -1285,17 +1304,15 @@ def render_budget_section():
                 ASSUMPTIONS_COLUMN: total_assumptions,
                 **({CUSTOM_SHARE_COLUMN: None} if custom_shares else {}),
             })
-            # Числа остаются числами (сортировка, выгрузка), формат — с
-            # разделителями разрядов по языку браузера (docs/ui_guide.md §5).
-            money_column = st.column_config.NumberColumn(format="localized")
+            # Числа остаются числами (сортировка, выгрузка), на экране — «12 345,67»
+            # при любом языке браузера (docs/ui_guide.md §5, data_table(money=…)).
             coef_column = st.column_config.NumberColumn(format="%.3f")
             data_table(
                 rows, hide_index=True, key="budget_table",
+                money=("База (в ценах раздела)", BUDGET_AFTER_INDEX_COLUMN, "С индексацией",
+                       BUDGET_AFTER_SECTION_COLUMN, BUDGET_AFTER_BOTH_COLUMN, "НДС",
+                       "Итого с НДС"),
                 column_config={
-                    **{name: money_column for name in (
-                        "База (в ценах раздела)", BUDGET_AFTER_INDEX_COLUMN, "С индексацией",
-                        BUDGET_AFTER_SECTION_COLUMN, BUDGET_AFTER_BOTH_COLUMN, "НДС",
-                        "Итого с НДС")},
                     "Коэф. раздела": coef_column,
                     "Коэф. сводной": st.column_config.NumberColumn(format="%.4f"),
                     CUSTOM_SHARE_COLUMN: st.column_config.NumberColumn(format="%.1f %%"),
@@ -1528,15 +1545,18 @@ def render_cost_structure(result):
             for a, line in zip(cost_structure(result), result.lines)
         ],
         hide_index=True,
-        column_config={"Сумма, руб.": st.column_config.NumberColumn(format="localized")},
+        money=("Сумма, руб.",),
     )
 
 
 def geology_session():
-    """Сессия этапов геологии (создаётся пустой, если расчёт не начат)."""
-    return st.session_state.staged_sessions.setdefault(
-        "geology", StagedSession(as_staged(MODULES["geology"]["class"]()))
-    )
+    """Сессия этапов геологии; расчёт не начат — пустая сессия, которая в состояние
+    вкладки НЕ записывается: заход на страницы 4 и 5 не должен заводить раздел (аудит
+    05.11.2026, K3 — иначе геология числилась бы «начатой» без действий оператора)."""
+    session = st.session_state.staged_sessions.get("geology")
+    if session is None:
+        session = StagedSession(as_staged(MODULES["geology"]["class"]()))
+    return session
 
 
 def render_geology_cost_section(session):
@@ -1566,7 +1586,7 @@ def render_geology_cost_section(session):
     # ведомость), Streamlit удаляет вместе с состоянием. Значение — в
     # session_state до виджета, value= не передаётся (иначе Streamlit
     # предупреждает о двух источниках значения).
-    stored = st.session_state.setdefault("cost_inputs_geology", {})
+    stored = st.session_state.get("cost_inputs_geology", {})
     try:
         local_defaults = cost_input_defaults("geology_cost")
     except (OSError, ValueError) as exc:
@@ -2191,6 +2211,7 @@ def render_staged_module(staged, session, module_code, module):
             blockers,
         ):
             result = session.confirm(stage.key, refs)
+            session.object_code = run_context().object_data.code or ""
             # Решение №8: каждое подтверждение — новая версия в цепочке,
             # родитель — последняя сохранённая версия этой сессии.
             name = calculation_name(module_code)
@@ -2990,6 +3011,7 @@ def process_pending_loads(refs, store):
                 loaded_session.restore(loaded_results)
                 loaded_session.version_id = loaded_draft.base_version_id
             loaded_session.apply_draft(loaded_draft.stage_key, loaded_draft.inputs, loaded_draft.edits)
+            loaded_session.object_code = object_code_of(loaded_draft.object_data)
         except OPEN_ERRORS as exc:
             report_open_error(f"черновик (id={draft_id})", exc)
         st.session_state.staged_sessions[loaded_draft.module_code] = loaded_session
@@ -3023,6 +3045,14 @@ class LoadedVersion:
     calc_date: str | None
 
 
+def object_code_of(object_data):
+    """Шифр объекта из сохранённых данных объекта версии / черновика («» — нет данных
+    или шифр не задан)."""
+    if not object_data:
+        return ""
+    return ObjectData.from_dict(object_data).code or ""
+
+
 def read_version(store, version_id):
     """Чтение версии без изменения session_state (ошибка — OPEN_ERRORS):
     сначала читаем всё, потом меняем состояние вкладки."""
@@ -3045,6 +3075,7 @@ def apply_version(loaded, price_decision=False):
     расчёта, данные объекта, дата расчёта, ввод себестоимости, формы этапов.
     `price_decision` — см. `apply_object_data` (открытие всего расчёта)."""
     loaded.session.version_id = loaded.version_id  # следующие подтверждения — от этой версии
+    loaded.session.object_code = object_code_of(loaded.object_data)
     st.session_state.staged_sessions[loaded.module_code] = loaded.session
     st.session_state["module_choice"] = loaded.module_code
     st.session_state["save_smeta_name"] = loaded.name

@@ -602,3 +602,44 @@ def test_excluded_section_gives_no_reliability_notes():
     aggregator = BudgetAggregator()
     aggregator.add_module(make_module_budget(stale=True, notes=["Начисления не применены"], assumptions=3))
     assert aggregator.reliability_notes() == []
+
+
+# --- смешение объектов в сводной (аудит 05.11.2026) ---
+
+
+def _two_sections(geology_code, geodesy_code, geodesy_stale=False):
+    aggregator = BudgetAggregator()
+    aggregator.add_module(make_module_budget(object_code=geology_code))
+    aggregator.add_module(make_module_budget(
+        module_code="geodesy", module_name="Геодезия", object_code=geodesy_code, stale=geodesy_stale))
+    return aggregator
+
+
+def test_sections_of_different_objects_are_reported_and_not_exported(tmp_path):
+    aggregator = _two_sections("Т-01", "Т-02")
+    message = aggregator.mixed_objects()
+    assert message is not None
+    assert "«Т-01» — Геология" in message and "«Т-02» — Геодезия" in message
+    assert "В-" not in message and ".py" not in message
+    with pytest.raises(ValueError, match="разных объектов"):
+        aggregator.to_excel(str(tmp_path / "mixed.xlsx"))
+    assert not (tmp_path / "mixed.xlsx").exists()
+
+
+@pytest.mark.parametrize("codes", [("", ""), ("Т-01", "Т-01"), ("Т-01", ""), (" Т-01 ", "Т-01")])
+def test_one_object_or_empty_code_is_not_mixed(codes):
+    # пустой шифр у всех — не ошибка; раздел без шифра не считается «другим объектом»
+    aggregator = BudgetAggregator()
+    aggregator.add_module(ModuleBudget.from_totals("geology", "Геология", _totals(), object_code=codes[0]))
+    aggregator.add_module(ModuleBudget.from_totals("geodesy", "Геодезия", _totals(), object_code=codes[1]))
+    assert aggregator.mixed_objects() is None
+
+
+def test_excluded_section_of_other_object_does_not_block():
+    # раздел другого объекта, не вошедший в бюджет (устарел), сводную не блокирует
+    assert _two_sections("Т-01", "Т-02", geodesy_stale=True).mixed_objects() is None
+
+
+def _totals():
+    return TotalWithVat(base_total=1.0, index=1.0, indexed_total=1.0, vat_rate=0.2,
+                        vat_amount=0.2, total_with_vat=1.2, warnings=[])

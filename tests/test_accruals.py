@@ -100,6 +100,15 @@ def test_unfavorable_only_where_scheme_has_it():
     assert any("не применён" in w for w in accrual_warnings(ECOLOGY, CalculationContext(NoRefs(), data)))
 
 
+def test_unfavorable_missing_in_reference_book_is_named_as_such():
+    # у геологии надбавка в схеме есть; нет позиции в справочнике — так и сказать, а не
+    # «в эталонных сметах раздела его нет» (аудит 05.11, L-А9)
+    refs = CalculationContext(NoRefs(), ObjectData(unfavorable_period=True))
+    warnings = accrual_warnings(GEOLOGY, refs)
+    assert any("нет позиции СБЦ-99 т.2 п.4" in w for w in warnings)
+    assert not any("в эталонных сметах раздела его нет" in w for w in warnings)
+
+
 @needs_refs
 def test_unfavorable_coefficient_comes_from_reference_book():
     refs = CalculationContext(ReferenceBook(), ObjectData(unfavorable_period=True))
@@ -142,6 +151,40 @@ def test_geology_matches_etalon_sheet_1_2_1(road):
     assert a[line_id(GEOLOGY, REGIONAL_OFFICE)] == pytest.approx(v["H157"], abs=0.005)
     assert round(total(result)) == v["H158"]
     assert round(round(total(result)) * 81.95) == v["H160"]
+
+
+KARER = ROAD.parent / "Карьер_эталон.xlsx"
+
+
+@pytest.mark.skipif(not KARER.exists(), reason="нет эталонной книги в reference_data/")
+@needs_refs
+def test_geology_unfavorable_rounding_matches_karer_sheet_2_2_1():
+    """Округление надбавки за неблагоприятный период (аудит 05.11, L-А3) — на листе, где
+    H82 дробный: «№2.2.1_ИГИ» H82 = H81 × 1,2 с десятыми. Лист дальше берёт не H82, а
+    D151 = ROUND(H82) (база внутреннего, внешнего транспорта, оргликвидации и районного).
+    Программа округляет саму надбавку: H81 + ROUND(H81 × 0,2) = D151 — та же база при целом H81 (лист округляет каждую строку и итог полевых). Районные — без
+    округления, как H156 / H157 (округлена их база D156 / D157); итог листа — ROUND (H158)."""
+    ws = openpyxl.load_workbook(KARER, data_only=True)["№2.2.1_ИГИ"]
+    v = {c: ws[c].value for c in ("H81", "H82", "D151", "H125", "H146", "H148", "H151", "H152",
+                                  "H153", "H156", "H157", "H158")}
+    assert v["H82"] != round(v["H82"])  # лист действительно с дробной надбавкой
+    estimate = {
+        "geology.drilling.IV": fixed("geology.drilling.IV", v["H81"]),
+        "geology.transport": fixed("geology.transport", v["H151"]),
+        "geology.lab_x": fixed("geology.lab_x", v["H125"]),
+        "geology.kameral_bureniya": fixed("geology.kameral_bureniya", v["H146"]),
+        "geology.tehotchet": fixed("geology.tehotchet", v["H148"]),
+    }
+    data = ObjectData(unfavorable_period=True, external_transport_rate=0.392,
+                      org_liquidation_rate=0.06, org_liquidation_k=2.5,
+                      regional_field_rate=0.5, regional_office_rate=0.25)
+    a = amounts(apply_accruals(estimate, GEOLOGY, CalculationContext(ReferenceBook(), data)))
+    assert v["H81"] + a[line_id(GEOLOGY, UNFAVORABLE)] == v["D151"]
+    assert a[line_id(GEOLOGY, EXTERNAL_TRANSPORT)] == v["H152"]
+    assert a[line_id(GEOLOGY, ORG_LIQUIDATION)] == v["H153"]
+    assert a[line_id(GEOLOGY, REGIONAL_FIELD)] == pytest.approx(v["H156"], abs=0.005)
+    assert a[line_id(GEOLOGY, REGIONAL_OFFICE)] == pytest.approx(v["H157"], abs=0.005)
+    assert round(sum(a.values())) == v["H158"]
 
 
 @needs_etalon

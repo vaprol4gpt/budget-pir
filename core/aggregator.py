@@ -224,6 +224,10 @@ class ModuleBudget:
     # параметров посчитано по правилам-допущениям (core/param_rules.py).
     notes: list[str] = field(default_factory=list)
     assumptions: int = 0
+    # Шифр объекта, для которого подтверждена смета раздела («» — шифр не задан или
+    # неизвестен). Разделы разных объектов в одну сводную не складываются
+    # (`BudgetAggregator.mixed_objects`).
+    object_code: str = ""
 
     @property
     def included(self) -> bool:
@@ -265,6 +269,7 @@ class ModuleBudget:
         mobilization_base: float = 0.0,
         notes: list[str] | None = None,
         assumptions: int = 0,
+        object_code: str = "",
     ) -> "ModuleBudget":
         """Переупаковывает уже посчитанный `TotalWithVat` в `ModuleBudget` —
         ничего не пересчитывает заново."""
@@ -288,6 +293,7 @@ class ModuleBudget:
             index_stale=getattr(totals, "index_stale", False),
             notes=list(notes or []),
             assumptions=assumptions,
+            object_code=(object_code or "").strip(),
         )
 
 
@@ -360,6 +366,25 @@ class BudgetAggregator:
                 "«Справочники»)."
             )
         return notes
+
+    def mixed_objects(self) -> str | None:
+        """Текст «разделы разных объектов» — если у разделов, вошедших в бюджет, разные
+        шифры объекта; None — объект один. Раздел без шифра конфликтом не считается
+        (шифр не задан — не значит «другой объект»; пустой шифр у всех — не ошибка).
+        Такой бюджет не собирается: страница показывает текст вместо итога, `to_excel`
+        отказывает (аудит 05.11.2026, смешение объектов в сводной)."""
+        by_code: dict[str, list[str]] = {}
+        for m in self._modules:
+            if m.included and m.object_code:
+                by_code.setdefault(m.object_code, []).append(m.module_name)
+        if len(by_code) < 2:
+            return None
+        parts = "; ".join(f"шифр «{code}» — {', '.join(names)}" for code, names in by_code.items())
+        return (
+            f"Разделы посчитаны для разных объектов ({parts}). Сводный бюджет не собран: "
+            "откройте разделы одного объекта (страница «Версии», «Открыть все разделы "
+            "расчёта») или пересчитайте и подтвердите сметы лишних разделов для текущего объекта."
+        )
 
     def add_module(self, module_budget: ModuleBudget) -> None:
         """Добавить итог модуля. Повтор того же `module_code` — `ValueError`
@@ -530,7 +555,11 @@ class BudgetAggregator:
         разделам, итог = «ВСЕГО с НДС»; `kp_warnings` — предупреждения под
         таблицей КП (например, «Работа в убыток на N руб.», core/target_loss.py).
         `reliability_notes` агрегатор добавляет сам — и на лист «КП», и под таблицу
-        первого листа: выгрузить цену без этих отметок нельзя."""
+        первого листа: выгрузить цену без этих отметок нельзя. Разделы разных объектов
+        (`mixed_objects`) — `ValueError`: такой сводной быть не должно."""
+        mixed = self.mixed_objects()
+        if mixed:
+            raise ValueError(mixed)
         wb = Workbook()
         ws = wb.active
         ws.title = "Сводный бюджет"

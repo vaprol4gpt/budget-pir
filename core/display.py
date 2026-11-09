@@ -50,9 +50,36 @@ _DECISION_MARKS = (
 )
 
 
+# «Позиция без расценки» модуля (экология: две такие на учебном объекте) — одно и то же действие
+# оператора на каждую позицию; на экране они сводятся в одно сообщение.
+_NO_RATE = re.compile(
+    r"^«(?P<name>.+)»: не найдена как расценка (?P<book>\S+) ни в одной смете заказчика "
+    r"— требуется отдельный источник цены$"
+)
+
+
+def merge_no_rate(warnings: list[str]) -> list[str]:
+    """Несколько ««X»: не найдена как расценка … — требуется отдельный источник цены» одного
+    сборника — одним сообщением на месте первого; одно такое — без изменений."""
+    found = [(i, _NO_RATE.match(text)) for i, text in enumerate(warnings)]
+    found = [(i, m) for i, m in found if m is not None]
+    books = {m["book"] for _i, m in found}
+    if len(found) < 2 or len(books) != 1:
+        return list(warnings)
+    names = ", ".join(f"«{m['name']}»" for _i, m in found)
+    merged = (
+        f"{names}: не найдены как расценки {books.pop()} ни в одной смете заказчика — требуется "
+        "отдельный источник цены (своя строка с основанием: прайс, калькуляция, аналог)"
+    )
+    first, skip = found[0][0], {i for i, _m in found}
+    return [merged if i == first else text for i, text in enumerate(warnings)
+            if i == first or i not in skip]
+
+
 def split_warnings(warnings: list[str]) -> tuple[list[str], list[str]]:
-    """(требуют решения, к сведению); порядок внутри каждого списка сохраняется."""
+    """(требуют решения, к сведению); порядок внутри каждого списка сохраняется. Позиции без
+    расценки одного сборника сводятся в одно сообщение (`merge_no_rate`)."""
     decisions, notes = [], []
-    for text in warnings:
+    for text in merge_no_rate(warnings):
         (decisions if any(mark in text for mark in _DECISION_MARKS) else notes).append(text)
     return decisions, notes

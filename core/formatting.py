@@ -74,6 +74,16 @@ def format_quantity(value: float, unit: str) -> str:
     return f"{value:.{decimals}f}".replace(".", ",")
 
 
+def money_text(value: float | None) -> str:
+    """Рубли для показа — «12 345,67»: неразрывный пробел между разрядами (число не
+    переносится), запятая перед копейками, независимо от языка браузера; None и NaN — «—».
+    Одно правило для текста страниц и денежных колонок таблиц (`app/ui.py::data_table`,
+    параметр `money`)."""
+    if value is None or value != value:  # NaN != NaN
+        return "—"
+    return f"{value:,.2f}".replace(",", " ").replace(".", ",")
+
+
 def excel_number_format(unit: str) -> str:
     """Excel `number_format` (openpyxl) для колонки "Кол-во" по
     единице измерения — ячейка остаётся ЧИСЛОМ (не текстом, в отличие
