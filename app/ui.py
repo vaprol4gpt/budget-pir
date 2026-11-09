@@ -264,7 +264,7 @@ def page_header(title, what_to_do):
         st.header(title, anchor=False)
         st.caption(what_to_do)
         st.html(theme.header_meta(meta, status))
-    # Справка «Как работать с этим шагом» — из app/help_texts.json (трек 5, app/ui_help.py).
+    # Справка «Как работать с этим шагом» — из app/help_texts.json (app/ui_help.py).
     ui_help.render_page_help(title, is_step=page_key is not None)
 
 
@@ -1477,7 +1477,7 @@ def geology_cost_numbers(session, meters, values):
         values["lowboy_units"] = int(values["lowboy_units"])
     inputs = CostInputs.from_dict(values)
     try:
-        # нормы геологии вместе с общими ставками (core/cost.py, трек 3 03.11.2026)
+        # нормы геологии вместе с общими ставками (core/cost.py, 03.11.2026)
         norms = load_cost_norms(NORMS_NAME)
     except (OSError, ValueError) as exc:
         # битый локальный слой компании — работают допущения, страница не падает (С8)
@@ -3362,7 +3362,7 @@ def render_minimum_summary(geology_cost):
                 "Себестоимость неполная — не заполнено на странице «4. Минимальный бюджет»: "
                 + ", ".join(result.missing)
             )
-    from app import ui_minimum  # все разделы и объект (трек 3, 03.11.2026)
+    from app import ui_minimum  # все разделы и объект (03.11.2026)
 
     ui_minimum.render_object_summary(geology_cost)
 

@@ -305,7 +305,7 @@
 .stApp [data-testid="stNumberInputStepDown"], .stApp [data-testid="stNumberInputStepUp"] { background: var(--surface-raised); color: var(--ink-muted); }
 /* Выпадающий список Streamlit 1.64 — react-aria ComboBox, а не baseweb select: правило выше
    его не задевает, и поле оставалось серым (secondaryBackgroundColor) со светлой рамкой —
-   хвост прогона «дальше» 03.11. Белое поле и рамка border-strong, как у остальных полей. */
+   Доработка 03.11. Белое поле и рамка border-strong, как у остальных полей. */
 .stApp [data-testid="stSelectbox"] .react-aria-ComboBox [role="group"], .stApp [data-testid="stMultiSelect"] .react-aria-ComboBox [role="group"] { background: var(--surface-raised); border-color: var(--border-strong); border-radius: var(--radius-sm); color: var(--ink); }
 .stApp [data-testid="stSelectbox"] .react-aria-ComboBox [role="group"]:focus-within, .stApp [data-testid="stMultiSelect"] .react-aria-ComboBox [role="group"]:focus-within { border-color: var(--focus); }
 .stApp [data-testid="stNumberInputStepDown"]:hover, .stApp [data-testid="stNumberInputStepUp"]:hover { background: var(--accent-soft); color: var(--accent-ink); }

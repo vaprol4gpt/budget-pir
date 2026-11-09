@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "budget-pir"
 version = "0.2.0"
-description = "Расчёт бюджета проектно-изыскательских работ (ВКР, компания-исполнитель)"
+description = "Расчёт бюджета проектно-изыскательских работ (ВКР)"
 requires-python = ">=3.13"
 # Основные зависимости — как в requirements.txt; точные версии всего
 # окружения — requirements-lock.txt (из него ставит setup.bat).

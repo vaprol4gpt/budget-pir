@@ -1,4 +1,4 @@
-"""Хвост прогона «дальше» №3: выпадающие списки — на белой подложке, как
+"""Доработка: выпадающие списки — на белой подложке, как
 остальные поля ввода (components/Field.md).
 
 В Streamlit 1.64 st.selectbox — react-aria ComboBox (`.react-aria-ComboBox
