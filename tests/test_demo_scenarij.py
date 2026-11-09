@@ -21,7 +21,9 @@
 
 import datetime
 import io
+import re
 import socket
+from pathlib import Path
 
 import openpyxl
 import pytest
@@ -61,6 +63,8 @@ EXPECTED = {
     "geodesy": {"total": "4 794 524,84", "assumptions": 6},
     "hydromet": {"total": "1 565 371,20", "assumptions": 5},
 }
+OBJECT_ASSUMPTIONS = 1                     # допущения уровня данных объекта
+EXPECTED_TOTAL_ASSUMPTIONS = sum(e["assumptions"] for e in EXPECTED.values()) + OBJECT_ASSUMPTIONS
 EXPECTED_GEOLOGY_MAX = "3 405 844,86"      # смета геологии без НДС
 EXPECTED_GEOLOGY_MIN = "3 113 742,66"      # себестоимость геологии
 EXPECTED_GEOLOGY_COEF = "0,914"            # минимум / максимум
@@ -245,7 +249,7 @@ def test_demo_scenario(isolated_smeta_db, no_network, captured_downloads):
     assert table["Итого с НДС"].iloc[-1] == pytest.approx(EXPECTED_TOTAL, abs=0.005)
     assert table["После снижения раздела и сводной, без НДС"].iloc[-1] == pytest.approx(
         EXPECTED_TOTAL_NO_VAT, abs=0.005)
-    assert any("Итог содержит 15 допущений" in w for w in _texts(at.warning))
+    assert any(f"Итог содержит {EXPECTED_TOTAL_ASSUMPTIONS} допущений" in w for w in _texts(at.warning))
 
     # снижение сводной ×0,9: ниже безопасного коэффициента геологии (0,914) — предупреждение
     at.number_input(key="obj_red_budget").set_value(BUDGET_REDUCTION)
@@ -270,3 +274,23 @@ def test_demo_scenario(isolated_smeta_db, no_network, captured_downloads):
     info = {row[0]: row[1] for row in workbook["Сведения"].iter_rows(values_only=True) if row}
     assert info["Дата расчёта"] == "30.09.2026"
     assert info["Шифр объекта"] == "Т-01"
+
+
+DEMO_DOC = Path(__file__).resolve().parent.parent / "docs" / "diplom" / "demo_scenarij.md"
+
+
+def test_demo_doc_assumption_counts():
+    """Числа допущений в документе сценария = числам, которые проверяет прогон выше."""
+    if not DEMO_DOC.exists():
+        pytest.skip("материалы ВКР не публикуются")
+    text = " ".join(DEMO_DOC.read_text(encoding="utf-8").split())
+    sections = [int(n) for n in re.findall(r"Итог раздела содержит (\d+) допущ", text)]
+    assert sections == [EXPECTED[code]["assumptions"] for code in SECTIONS]
+    totals = [int(n) for n in re.findall(r"Итог содержит (\d+) допущ", text)]
+    assert totals == [EXPECTED_TOTAL_ASSUMPTIONS]
+    breakdown = re.search(r"Итог содержит \d+ допущений в параметрах смет: ([^»]*)»", text).group(1)
+    parts = dict(item.rsplit(" — ", 1) for item in breakdown.split("; "))
+    assert [int(parts[label]) for label in ("Геология (ОИГ)", "Геодезия (ИГДИ)",
+                                            "Гидрометеорология (ИГМИ)")] == [
+        EXPECTED[code]["assumptions"] for code in SECTIONS]
+    assert int(parts["данные объекта"]) == OBJECT_ASSUMPTIONS

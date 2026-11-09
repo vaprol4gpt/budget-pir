@@ -11,7 +11,7 @@ ScriptRunner и веб-сервер. Поэтому этот файл прогр
 бандла (через `resource_path`, учитывающую `sys._MEIPASS` — временную
 папку распаковки PyInstaller-onefile).
 
-Тема (тёмный фон + бирюзовый акцент, см. `.streamlit/config.toml`)
+Тема (цвета из токенов дизайн-кода, см. `.streamlit/config.toml` и `app/theme/theme_flags.json`)
 передаётся явными CLI-флагами, а не бандлованием самого
 `.streamlit/config.toml` — Streamlit ищет этот файл относительно
 ТЕКУЩЕЙ РАБОЧЕЙ ДИРЕКТОРИИ процесса на момент запуска, а не
