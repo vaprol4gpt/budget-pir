@@ -1,0 +1,76 @@
+# Автоматическая проверка на GitHub (GitHub Actions): при каждой отправке (push) ветки и
+# в каждом запросе на слияние (pull request) — те же шаги, что делает setup.bat на новом ПК:
+# зависимости из requirements-lock.txt, проект в режиме редактирования, сборка справочника
+# расценок, тесты. Плюс проверка кода ruff (замечание останавливает проверку).
+#
+# Чего на GitHub нет и быть не должно (всё это в .gitignore): data/local/ (внутренние ставки
+# компании), work/ (в т.ч. разборы исходников), _______ИСХОДНИКИ/, releases/, data/*.sqlite.
+# Тесты, которым нужны эти данные, на GitHub пропускаются с причиной: ожидаемая картина —
+# как в чистом клоне без data/local/ и work/ (03.11.2026, конец прогона «два дня»: ≈ 1231 passed, 3 skipped — два теста
+# себестоимости геологии и сверка tests/test_no_customer_data.py «сверять не с чем»). В рабочей
+# копии git worktree на ПК автора секреты берутся из основной копии, поэтому там на один пропуск меньше.
+
+name: Тесты
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:  # ручной запуск со страницы Actions
+
+permissions:
+  contents: read
+
+concurrency:
+  # Новая отправка той же ветки отменяет ещё идущую проверку старой
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Кириллица в путях, именах эталонов и выводе тестов: Python — в UTF-8 везде
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: utf-8
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  tests:
+    name: pytest (Windows, Python 3.13)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        # bash (Git Bash раннера) запускается с -e: многострочный шаг падает на первой
+        # ошибке команды (pwsh смотрел бы только на код последней команды)
+        shell: bash
+    steps:
+      - name: Получить код
+        uses: actions/checkout@v4
+
+      - name: Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            requirements-lock.txt
+            requirements-dev.txt
+
+      - name: Зависимости (как setup.bat)
+        run: |
+          python -m pip install -q -r requirements-lock.txt
+          # Сам проект — без зависимостей и без отдельной сборочной среды, как в setup.bat
+          python -m pip install -q --no-deps --no-build-isolation -e .
+          # ruff — из requirements-dev.txt (остальные версии там те же, что в lock)
+          python -m pip install -q -r requirements-dev.txt
+          python --version
+          python -m pip list
+
+      - name: Справочник расценок (data/references.sqlite)
+        run: python data/build_references.py
+
+      - name: Проверка кода ruff
+        # Замечания исправлены 03.11.2026; новые замечания останавливают проверку.
+        run: python -m ruff check --output-format=github .
+
+      - name: Тесты
+        # -rs — в выводе причины пропущенных тестов (что не проверено на GitHub)
+        run: python -m pytest -q -rs -p no:cacheprovider

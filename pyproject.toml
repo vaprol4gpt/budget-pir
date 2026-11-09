@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "budget-pir"
+version = "0.2.0"
+description = "Расчёт бюджета проектно-изыскательских работ (ВКР, компания-исполнитель)"
+requires-python = ">=3.13"
+# Основные зависимости — как в requirements.txt; точные версии всего
+# окружения — requirements-lock.txt (из него ставит setup.bat).
+dependencies = [
+    "openpyxl==3.1.5",
+    "streamlit==1.64.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "pyinstaller==6.22.3"]
+
+[tool.setuptools]
+# Пакеты проекта: ядро, модули по видам работ, скрипт сборки справочника
+# (импортируется тестами как data.build_references), интерфейс.
+packages = [
+    "core",
+    "modules",
+    "modules.ecology",
+    "modules.geodesy",
+    "modules.geology",
+    "modules.geophysics",
+    "modules.hydromet",
+    "data",
+    "app",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Корень проекта в sys.path и при запуске просто `pytest` (не только
+# `python -m pytest`, который добавляет текущую папку сам).
+pythonpath = ["."]
+
+[tool.ruff]
+# Проверка кода ruff (линтер): `.venv/Scripts/ruff.exe check .` (ставится из
+# requirements-dev.txt). Файлы из .gitignore (work/, .venv/ и т.п.) ruff не смотрит сам.
+target-version = "py313"
+# 120 — по фактическому коду: длиннее 120 символов ~55 строк (в основном тексты
+# интерфейса и сгенерированный CSS в app/theme/build_theme.py), длиннее 100 — ~420.
+# Правило длины строки (E501) пока не включено.
+line-length = 120
+
+[tool.ruff.lint]
+# С 03.11.2026 (после разовой правки): ошибки имён/импортов (F), синтаксиса (E9), импортов и
+# выражений (E4, E7), пробелов (W), порядок импортов (I), частые ошибки (B).
+# B905 (zip без strict=) — не включён: strict=True меняет поведение, правится вручную по месту.
+# E501 (длина строки) — не включать, тексты интерфейса длинные.
+select = ["F", "E9", "E4", "E7", "W", "I", "B"]
+ignore = ["B905"]
+
+[tool.ruff.lint.isort]
+# Свои пакеты — отдельной группой после сторонних (как уже принято в коде).
+known-first-party = ["app", "core", "data", "modules", "tools"]
+# «from x import a, b as c» — одним блоком, как в коде (а не отдельной строкой на «as»).
+combine-as-imports = true

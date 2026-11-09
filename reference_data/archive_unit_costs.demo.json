@@ -1,0 +1,11 @@
+{
+  "_описание": "ДЕМОНСТРАЦИОННЫЕ ДАННЫЕ. Условные объекты и выдуманные круглые числа — не факт и не производные от фактических данных. Файл нужен, чтобы экран «Контроль по архиву» работал в публичной копии и демо-сборке, где настоящего архива себестоимости компании нет (reference_data/archive_unit_costs.json — только на ПК компании). Настоящий файл, если он есть, имеет приоритет (modules/geology/cost.py::load_archive).",
+  "source": "ДЕМОНСТРАЦИОННЫЕ ДАННЫЕ (условные объекты, выдуманные числа — не факт)",
+  "demo": true,
+  "objects": [
+    {"code": "Демо-1", "years": "2017", "year": 2017, "meters": 1000, "fact_cost_per_m": 7000.0, "norm_cost_per_m": null, "ratio": null, "note": "условный объект"},
+    {"code": "Демо-2", "years": "2019", "year": 2019, "meters": 2000, "fact_cost_per_m": 8000.0, "norm_cost_per_m": null, "ratio": null, "note": "условный объект"},
+    {"code": "Демо-3", "years": "2021", "year": 2021, "meters": 1500, "fact_cost_per_m": 9000.0, "norm_cost_per_m": null, "ratio": null, "note": "условный объект"},
+    {"code": "Демо-4", "years": "2023", "year": 2023, "meters": 500, "fact_cost_per_m": null, "norm_cost_per_m": null, "ratio": null, "note": "условный объект, факта нет"}
+  ]
+}

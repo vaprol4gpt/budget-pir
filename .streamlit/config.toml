@@ -1,0 +1,99 @@
+# ВНИМАНИЕ: файл генерируется — app/theme/build_theme.py из дизайн-кода компании
+# (docs/design/firm-design-code/tokens.json). Руками не править: правка токенов →
+# перегенерация (`.venv/Scripts/python.exe -m app.theme.build_theme`).
+#
+# Как это работает в Streamlit 1.64 (проверено чтением исходников 25.10.2026):
+# переключатель тем System/Light/Dark в меню «⋮» (справа сверху) появляется, только когда
+# заполнены ОБЕ секции — [theme.light] и [theme.dark]; верхнеуровневый [theme] не задаём
+# (он запирает программу в одной теме). «System» следует теме Windows/браузера; выбор
+# оператора браузер запоминает. Светлая «Белая сталь» — основная тема дизайн-кода, тёмная
+# «Чёрная сталь» — по выбору.
+
+[client]
+toolbarMode = "viewer"
+
+# «Белая сталь»
+[theme.light]
+primaryColor = "#00726A"
+backgroundColor = "#F3F6F6"
+secondaryBackgroundColor = "#E7ECEC"
+textColor = "#0E1413"
+borderColor = "#D3DBDA"
+linkColor = "#00665D"
+codeTextColor = "#0E1413"
+codeBackgroundColor = "#E7ECEC"
+dataframeBorderColor = "#D3DBDA"
+dataframeHeaderBackgroundColor = "#E7ECEC"
+greenColor = "#2E7D4F"
+greenBackgroundColor = "#E3F2E8"
+greenTextColor = "#2E7D4F"
+orangeColor = "#8A5000"
+orangeBackgroundColor = "#FBF0DC"
+orangeTextColor = "#8A5000"
+yellowColor = "#8A5000"
+redColor = "#B3261E"
+redBackgroundColor = "#FBE6E4"
+redTextColor = "#B3261E"
+blueColor = "#00665D"
+blueBackgroundColor = "#FFFFFF"
+blueTextColor = "#0E1413"
+grayColor = "#4A5654"
+grayTextColor = "#4A5654"
+font = "'Golos Text', 'Segoe UI', sans-serif:https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap"
+headingFont = "'Manrope', 'Golos Text', 'Segoe UI', sans-serif:https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap"
+codeFont = "'JetBrains Mono', Consolas, monospace:https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+codeFontSize = "13px"
+headingFontSizes = ["28px", "20px", "16px", "15px", "13px", "12px"]
+headingFontWeights = [700, 700, 600, 600, 600, 600]
+baseRadius = "4px"
+buttonRadius = "4px"
+showWidgetBorder = true
+linkUnderline = false
+
+[theme.light.sidebar]
+backgroundColor = "#E7ECEC"
+secondaryBackgroundColor = "#FFFFFF"
+borderColor = "#D3DBDA"
+
+# «Чёрная сталь»
+[theme.dark]
+primaryColor = "#2EC4B6"
+backgroundColor = "#0C1110"
+secondaryBackgroundColor = "#090D0C"
+textColor = "#EEF3F2"
+borderColor = "#26302E"
+linkColor = "#3FC4B7"
+codeTextColor = "#EEF3F2"
+codeBackgroundColor = "#090D0C"
+dataframeBorderColor = "#26302E"
+dataframeHeaderBackgroundColor = "#090D0C"
+greenColor = "#5CC48A"
+greenBackgroundColor = "#12291C"
+greenTextColor = "#5CC48A"
+orangeColor = "#F0B357"
+orangeBackgroundColor = "#2E2412"
+orangeTextColor = "#F0B357"
+yellowColor = "#F0B357"
+redColor = "#FF8A7A"
+redBackgroundColor = "#331816"
+redTextColor = "#FF8A7A"
+blueColor = "#3FC4B7"
+blueBackgroundColor = "#141A19"
+blueTextColor = "#EEF3F2"
+grayColor = "#9AA8A6"
+grayTextColor = "#9AA8A6"
+font = "'Golos Text', 'Segoe UI', sans-serif:https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap"
+headingFont = "'Manrope', 'Golos Text', 'Segoe UI', sans-serif:https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap"
+codeFont = "'JetBrains Mono', Consolas, monospace:https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap"
+codeFontSize = "13px"
+headingFontSizes = ["28px", "20px", "16px", "15px", "13px", "12px"]
+headingFontWeights = [700, 700, 600, 600, 600, 600]
+baseRadius = "4px"
+buttonRadius = "4px"
+showWidgetBorder = true
+linkUnderline = false
+
+[theme.dark.sidebar]
+backgroundColor = "#090D0C"
+secondaryBackgroundColor = "#141A19"
+borderColor = "#26302E"

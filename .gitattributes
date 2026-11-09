@@ -1,0 +1,18 @@
+# Окончания строк одинаковы на всех ПК независимо от core.autocrlf:
+# в репозитории текст хранится с LF, при checkout — как указано ниже.
+* text=auto
+
+*.py   text eol=lf
+*.md   text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+
+# cmd.exe надёжно читает .bat/.cmd только с CRLF
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+
+# Двоичные — без преобразований и текстовых diff
+*.xlsx   binary
+*.xls    binary
+*.sqlite binary
+*.exe    binary

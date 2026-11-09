@@ -1,0 +1,334 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ВНИМАНИЕ: файл генерируется — app/theme/build_theme.py из
+   docs/design/firm-design-code/tokens.json и firm.css. Руками не править. */
+
+/* «Белая сталь» — светлая тема (по умолчанию) */
+:root {
+  --emerald-50: #E6F5F3;
+  --emerald-100: #C2E8E3;
+  --emerald-300: #4FAFA7;
+  --emerald-500: #00A197;
+  --emerald-600: #008D81;
+  --emerald-700: #00726A;
+  --emerald-800: #025449;
+  --emerald-900: #012D25;
+  --emerald-950: #01100D;
+  --steel-0: #FFFFFF;
+  --steel-50: #F3F6F6;
+  --steel-100: #E7ECEC;
+  --steel-200: #D3DBDA;
+  --steel-400: #788584;
+  --steel-600: #4A5654;
+  --steel-800: #1E2625;
+  --steel-900: #141A19;
+  --steel-950: #0C1110;
+  --gradient-from: #00A197;
+  --gradient-via: #00726A;
+  --gradient-to: #01231D;
+  --surface: #F3F6F6;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #E7ECEC;
+  --surface-hover: #EEF2F2;
+  --border: #D3DBDA;
+  --border-strong: #788584;
+  --ink: #0E1413;
+  --ink-muted: #4A5654;
+  --accent: #00726A;
+  --accent-hover: #005E57;
+  --on-accent: #FFFFFF;
+  --accent-ink: #00665D;
+  --accent-soft: #DDF1EE;
+  --focus: #007A70;
+  --success: #2E7D4F;
+  --success-soft: #E3F2E8;
+  --warning: #8A5000;
+  --warning-soft: #FBF0DC;
+  --danger: #B3261E;
+  --danger-soft: #FBE6E4;
+  --font-display: "Manrope", "Golos Text", system-ui, sans-serif;
+  --font-sans: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", ui-monospace, monospace;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --shadow-overlay: 0 8px 24px rgba(12, 17, 16, 0.16);
+}
+
+/* «Чёрная сталь» — тёмная тема */
+:root:has(.vs-theme-dark) {
+  --emerald-50: #E6F5F3;
+  --emerald-100: #C2E8E3;
+  --emerald-300: #4FAFA7;
+  --emerald-500: #00A197;
+  --emerald-600: #008D81;
+  --emerald-700: #00726A;
+  --emerald-800: #025449;
+  --emerald-900: #012D25;
+  --emerald-950: #01100D;
+  --steel-0: #FFFFFF;
+  --steel-50: #F3F6F6;
+  --steel-100: #E7ECEC;
+  --steel-200: #D3DBDA;
+  --steel-400: #788584;
+  --steel-600: #4A5654;
+  --steel-800: #1E2625;
+  --steel-900: #141A19;
+  --steel-950: #0C1110;
+  --gradient-from: #00A197;
+  --gradient-via: #00726A;
+  --gradient-to: #01231D;
+  --surface: #0C1110;
+  --surface-raised: #141A19;
+  --surface-sunken: #090D0C;
+  --surface-hover: #1E2625;
+  --border: #26302E;
+  --border-strong: #5B6866;
+  --ink: #EEF3F2;
+  --ink-muted: #9AA8A6;
+  --accent: #2EC4B6;
+  --accent-hover: #5ED3C7;
+  --on-accent: #01100D;
+  --accent-ink: #3FC4B7;
+  --accent-soft: #0F2B27;
+  --focus: #3FC4B7;
+  --success: #5CC48A;
+  --success-soft: #12291C;
+  --warning: #F0B357;
+  --warning-soft: #2E2412;
+  --danger: #FF8A7A;
+  --danger-soft: #331816;
+  --shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Классы дизайн-кода (docs/design/firm-design-code/firm.css) --- */
+/* компании — дизайн-код. Классы с префиксом vs-. Значения — только через токены. */
+
+.vs-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vs-code { font-family: var(--font-mono); font-size: 13px; line-height: 18px; }
+.vs-label { font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.vs-muted { color: var(--ink-muted); }
+.vs-row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+.vs-stack { display: flex; flex-direction: column; gap: var(--space-3); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: var(--radius-xs); }
+
+/* Фирменный градиент и срез */
+.vs-gradient { background: linear-gradient(160deg, var(--gradient-from) 0%, var(--gradient-via) 45%, var(--gradient-to) 100%); color: var(--steel-0); }
+.vs-gradient--deep { background: linear-gradient(160deg, var(--gradient-via) 0%, var(--emerald-800) 50%, var(--gradient-to) 100%); color: var(--steel-0); }
+.vs-slash { display: inline-flex; gap: 4px; height: 16px; }
+.vs-slash::before, .vs-slash::after { content: ""; width: 5px; height: 100%; background: currentColor; transform: skewX(-30deg); }
+
+/* Кнопки */
+.vs-btn { font: 600 14px/20px var(--font-sans); display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 40px; padding: 0 var(--space-4); border-radius: var(--radius-sm); border: 1px solid transparent; cursor: pointer; text-decoration: none; transition: background-color .12s, border-color .12s; }
+.vs-btn--primary { background: var(--accent); color: var(--on-accent); }
+.vs-btn--primary:hover { background: var(--accent-hover); }
+.vs-btn--secondary { background: var(--surface-raised); color: var(--ink); border-color: var(--border-strong); }
+.vs-btn--secondary:hover { background: var(--surface-hover); }
+.vs-btn--ghost { background: transparent; color: var(--accent-ink); padding: 0 var(--space-2); }
+.vs-btn--ghost:hover { background: var(--accent-soft); }
+.vs-btn--danger { background: var(--surface-raised); color: var(--danger); border-color: var(--danger); }
+.vs-btn--danger:hover { background: var(--danger-soft); }
+.vs-btn--lg { min-height: 48px; padding: 0 var(--space-5); font-size: 15px; }
+.vs-btn--sm { min-height: 32px; padding: 0 var(--space-3); font-size: 13px; }
+.vs-btn[disabled], .vs-btn[aria-disabled="true"] { background: var(--surface-sunken); color: var(--ink-muted); border-color: var(--border); cursor: not-allowed; }
+
+/* Панель */
+.vs-panel { background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-5); }
+.vs-panel__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.vs-panel__title { font: 700 20px/28px var(--font-display); margin: 0; }
+.vs-panel__hint { color: var(--ink-muted); font-size: 13px; line-height: 18px; margin: var(--space-1) 0 0; }
+
+/* Панель действия */
+.vs-action { background: var(--surface-raised); border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: var(--radius-md); padding: var(--space-5); display: grid; grid-template-columns: 1fr auto; gap: var(--space-2) var(--space-5); align-items: center; }
+.vs-action__kicker { grid-column: 1 / -1; }
+.vs-action__text { margin: 0; }
+.vs-action__reason { grid-column: 1 / -1; color: var(--warning); font-size: 13px; line-height: 18px; margin: 0; }
+.vs-action__more { grid-column: 1 / -1; border-top: 1px solid var(--border); padding-top: var(--space-3); margin-top: var(--space-2); }
+
+/* Шапка шага */
+.vs-header { border-radius: var(--radius-md); padding: var(--space-6); position: relative; overflow: hidden; }
+.vs-header__step { font: 800 14px/20px var(--font-display); letter-spacing: .08em; text-transform: uppercase; display: flex; align-items: center; gap: var(--space-3); }
+.vs-header__title { font: 700 28px/34px var(--font-display); letter-spacing: -.01em; margin: var(--space-2) 0 var(--space-1); }
+.vs-header__lead { margin: 0; max-width: 60ch; }
+.vs-header__meta { margin-top: var(--space-4); display: flex; gap: var(--space-5); flex-wrap: wrap; font-size: 13px; }
+.vs-header__meta b { display: block; font: 600 15px/22px var(--font-sans); }
+
+/* Меню шагов */
+.vs-nav { width: 248px; background: var(--surface-sunken); border-right: 1px solid var(--border); padding: var(--space-5) var(--space-3); display: flex; flex-direction: column; gap: var(--space-1); box-sizing: border-box; }
+.vs-nav__brand { display: flex; align-items: center; gap: var(--space-3); padding: 0 var(--space-3) var(--space-5); }
+.vs-nav__group { padding: var(--space-4) var(--space-3) var(--space-2); }
+.vs-nav__item { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); color: var(--ink); text-decoration: none; font-weight: 500; }
+.vs-nav__item:hover { background: var(--surface-hover); }
+.vs-nav__num { font: 700 13px/1 var(--font-display); color: var(--ink-muted); width: 24px; height: 24px; display: grid; place-items: center; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font-variant-numeric: tabular-nums; }
+.vs-nav__item[aria-current="page"] { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.vs-nav__item[aria-current="page"] .vs-nav__num { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.vs-nav__sep { height: 1px; background: var(--border); margin: var(--space-3) var(--space-3); }
+
+/* Бейдж статуса */
+.vs-badge { display: inline-flex; align-items: center; gap: var(--space-1); padding: 2px var(--space-2); border-radius: var(--radius-xs); font: 600 12px/16px var(--font-sans); white-space: nowrap; }
+.vs-badge--done { background: var(--success-soft); color: var(--success); }
+.vs-badge--warn { background: var(--warning-soft); color: var(--warning); }
+.vs-badge--error { background: var(--danger-soft); color: var(--danger); }
+.vs-badge--todo { background: var(--surface-sunken); color: var(--ink-muted); }
+.vs-badge--brand { background: var(--accent-soft); color: var(--accent-ink); }
+
+/* Сообщение */
+.vs-callout { display: grid; grid-template-columns: 20px 1fr; gap: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid; font-size: 14px; line-height: 20px; }
+.vs-callout b { display: block; }
+.vs-callout__icon { font-weight: 700; text-align: center; }
+.vs-callout--info { background: var(--surface-raised); border-color: var(--border-strong); color: var(--ink); }
+.vs-callout--warn { background: var(--warning-soft); border-color: var(--warning); color: var(--ink); }
+.vs-callout--warn .vs-callout__icon { color: var(--warning); }
+.vs-callout--error { background: var(--danger-soft); border-color: var(--danger); color: var(--ink); }
+.vs-callout--error .vs-callout__icon { color: var(--danger); }
+.vs-callout--done { background: var(--success-soft); border-color: var(--success); color: var(--ink); }
+.vs-callout--done .vs-callout__icon { color: var(--success); }
+
+/* Итоговые цифры */
+.vs-figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); }
+.vs-figure { background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); }
+.vs-figure__value { font: 700 32px/36px var(--font-display); letter-spacing: -.01em; margin: var(--space-2) 0 var(--space-1); font-variant-numeric: tabular-nums; }
+.vs-figure__unit { font: 500 15px/22px var(--font-sans); color: var(--ink-muted); margin-left: var(--space-1); }
+.vs-figure__note { font-size: 13px; line-height: 18px; color: var(--ink-muted); margin: 0; }
+.vs-figure--key { border-color: var(--accent); background: var(--accent-soft); }
+.vs-figure--key .vs-figure__value { color: var(--accent-ink); }
+
+/* Таблица */
+.vs-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; font-size: 14px; line-height: 20px; }
+.vs-table th { background: var(--surface-sunken); text-align: left; padding: var(--space-2) var(--space-3); font: 600 12px/16px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-muted); border-bottom: 1px solid var(--border); }
+.vs-table td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--border); vertical-align: top; }
+.vs-table tr:last-child td { border-bottom: 0; }
+.vs-table tbody tr:hover td { background: var(--surface-hover); }
+.vs-table .is-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vs-table tr.is-total td { background: var(--accent-soft); font-weight: 700; border-top: 1px solid var(--accent); }
+.vs-table tr.is-sub td { font-weight: 600; background: var(--surface-sunken); }
+
+/* Поле ввода */
+.vs-field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 200px; }
+.vs-field__label { font: 600 13px/18px var(--font-sans); color: var(--ink); }
+.vs-field__control { display: flex; align-items: center; background: var(--surface-raised); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); min-height: 40px; padding: 0 var(--space-3); gap: var(--space-2); }
+.vs-field__control input { border: 0; outline: 0; background: transparent; color: var(--ink); font: 400 15px/22px var(--font-sans); width: 100%; font-variant-numeric: tabular-nums; }
+.vs-field__control:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.vs-field__unit { color: var(--ink-muted); font-size: 13px; white-space: nowrap; }
+.vs-field__hint { font-size: 12px; line-height: 16px; color: var(--ink-muted); }
+.vs-field.is-error .vs-field__control { border-color: var(--danger); }
+.vs-field.is-error .vs-field__hint { color: var(--danger); }
+
+/* --- Подгонка под Streamlit (генерируется app/theme/build_theme.py) --- */
+
+/* Шрифты: текст — Golos Text, заголовки — Manrope, шифры — JetBrains Mono. */
+.stApp, .stApp input, .stApp textarea, .stApp button, [data-testid="stSidebar"] { font-family: var(--font-sans); }
+.stApp h1, .stApp h2, .stApp h3, .stApp h4 { font-family: var(--font-display); }
+.stApp code, .vs-code { font-family: var(--font-mono); }
+
+/* Меню шагов (components/StepNav.md) */
+[data-testid="stSidebar"] { border-right: 1px solid var(--border); }
+[data-testid="stNavSectionHeader"] { font: 600 12px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); padding-top: var(--space-4); }
+[data-testid="stSidebarNavLink"] { border-radius: var(--radius-sm); color: var(--ink); font-weight: 500; gap: var(--space-2); }
+[data-testid="stSidebarNavLink"]:hover { background: var(--surface-hover); }
+[data-testid="stSidebarNavLink"][aria-current="page"] { background: var(--accent-soft); font-weight: 600; }
+[data-testid="stSidebarNavLink"][aria-current="page"] span { color: var(--ink); }
+/* Номер шага в квадрате и значок статуса справа: текст (content) — в app/theme/__init__.py
+   по адресу страницы, у служебных пунктов номера нет — ::before у них пустой. */
+[data-testid="stSidebarNavLink"]::before { font: 700 13px/1 var(--font-display); color: var(--ink-muted); min-width: 24px; height: 24px; display: inline-grid; place-items: center; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); font-variant-numeric: tabular-nums; box-sizing: border-box; flex: none; }
+[data-testid="stSidebarNavLink"][aria-current="page"]::before { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+[data-testid="stSidebarNavLink"]::after { margin-left: auto; font: 700 13px/1 var(--font-sans); }
+[data-testid="stSidebarNavSeparator"] { border-color: var(--border); }
+[data-testid="stLogo"] { height: 28px; max-width: 100%; }
+
+/* Рамки находим по невидимым меткам (app/theme/__init__.py::mark); метки панелей места не занимают. */
+[data-testid="stElementContainer"]:has(> [data-testid="stHtml"] > .vs-mark-panel), [data-testid="stElementContainer"]:has(> [data-testid="stHtml"] > .vs-mark-action) { display: none; }
+
+/* Шапка шага (components/PageHeader.md): глубокий градиент, белый текст. */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) { background: linear-gradient(160deg, var(--gradient-via) 0%, var(--emerald-800) 50%, var(--gradient-to) 100%); color: var(--steel-0); border-radius: var(--radius-md); padding: var(--space-6); gap: var(--space-2); }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) h1, [data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) h2, [data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) h3 { color: var(--steel-0); font: 700 28px/34px var(--font-display); letter-spacing: -.01em; padding: 0; margin: 0; }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) [data-testid="stHeadingWithActionElements"] a { display: none; }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) [data-testid="stCaptionContainer"], [data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) [data-testid="stCaptionContainer"] * { color: var(--steel-0) !important; opacity: 1; font-size: 15px; line-height: 22px; max-width: 75ch; }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) [data-testid="stHeading"] { margin-bottom: var(--space-2); }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) [data-testid="stCaptionContainer"] { margin-top: var(--space-1); }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) .vs-header__step { color: var(--steel-0); }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) .vs-header__meta { margin-top: var(--space-2); color: var(--steel-0); }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) .vs-header__meta > div > span { display: block; opacity: .85; }
+/* Бейдж на градиенте — всегда белая плашка с тёмным изумрудным текстом (в обеих темах:
+   цвета бейджей тёмной темы рассчитаны на тёмный фон и на белом не читаются). */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-header) .vs-badge { background: var(--steel-0); color: var(--emerald-900); opacity: 1; }
+
+/* Панели (components/Panel.md): белая карточка, рамка border, радиус radius-md. */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-panel) { background: var(--surface-raised); border-color: var(--border) !important; border-radius: var(--radius-md) !important; }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-panel) > [data-testid="stElementContainer"]:has(> [data-testid="stHtml"] > .vs-mark-panel) + [data-testid="stElementContainer"] [data-testid="stMarkdownContainer"] p, [data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-panel) > [data-testid="stElementContainer"]:has(> [data-testid="stHtml"] > .vs-mark-panel) + [data-testid="stElementContainer"] [data-testid="stMarkdownContainer"] strong { font: 700 20px/28px var(--font-display); color: var(--ink); }
+
+/* Панель «Действие» (components/ActionPanel.md): верхняя изумрудная линия. */
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-action) { background: var(--surface-raised); border-color: var(--border) !important; border-top: 3px solid var(--accent) !important; border-radius: var(--radius-md) !important; }
+[data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .vs-mark-action) > [data-testid="stElementContainer"]:has(> [data-testid="stHtml"] > .vs-mark-action) + [data-testid="stElementContainer"] [data-testid="stMarkdownContainer"] p { font: 600 12px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.vs-action__more { border-top: 1px solid var(--border); padding-top: var(--space-3); margin-top: var(--space-2); }
+.vs-action__reason { color: var(--warning); font-size: 13px; line-height: 18px; margin: 0; }
+
+/* Кнопки (components/Button.md) */
+.stApp button[kind="primary"], .stApp button[data-testid="stBaseButton-primary"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; min-height: 48px; padding: 0 var(--space-5); }
+.stApp button[kind="primary"] p { color: var(--on-accent); font-size: 15px; }
+.stApp button[kind="primary"]:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--on-accent); }
+.stApp button[kind="primary"]:disabled { background: var(--surface-sunken); border-color: var(--border); color: var(--ink-muted); }
+.stApp button[kind="primary"]:disabled p { color: var(--ink-muted); }
+.stApp button[kind="secondary"], .stApp [data-testid="stBaseButton-secondary"] { background: var(--surface-raised); border-color: var(--border-strong); color: var(--ink); }
+.stApp button[kind="secondary"]:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--border-strong); color: var(--ink); }
+.stApp button[kind="secondary"]:disabled, .stApp [data-testid="stBaseButton-secondary"]:disabled { background: var(--surface-sunken); border-color: var(--border); color: var(--ink-muted); }
+.stApp button[kind="secondary"]:disabled p { color: var(--ink-muted); }
+/* Флажки и переключатели: контур border-strong, иначе пустой флажок в тёмной теме почти не виден. */
+.stApp [data-testid="stCheckbox"] label > span:first-child, .stApp [data-testid="stRadio"] label > div:first-child { border: 1px solid var(--border-strong); }
+.stApp :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Сообщения (components/Callout.md): текст на ink, цвет несут рамка и значок. */
+.stApp [data-testid="stAlertContainer"] { border: 1px solid var(--border-strong); border-radius: var(--radius-md); color: var(--ink); }
+.stApp [data-testid="stAlertContainer"]:has([data-testid="stAlertContentInfo"]) { background: var(--surface-raised); border-color: var(--border-strong); }
+.stApp [data-testid="stAlertContainer"]:has([data-testid="stAlertContentWarning"]) { background: var(--warning-soft); border-color: var(--warning); }
+.stApp [data-testid="stAlertContainer"]:has([data-testid="stAlertContentError"]) { background: var(--danger-soft); border-color: var(--danger); }
+.stApp [data-testid="stAlertContainer"]:has([data-testid="stAlertContentSuccess"]) { background: var(--success-soft); border-color: var(--success); }
+.stApp [data-testid^="stAlertContent"] { color: var(--ink); display: grid; grid-template-columns: 20px 1fr; gap: var(--space-3); }
+.stApp [data-testid^="stAlertContent"] p, .stApp [data-testid^="stAlertContent"] li { color: var(--ink); }
+.stApp [data-testid^="stAlertContent"]::before { font-weight: 700; text-align: center; }
+.stApp [data-testid="stAlertContentInfo"]::before { content: "i"; color: var(--accent-ink); }
+.stApp [data-testid="stAlertContentWarning"]::before { content: "!"; color: var(--warning); }
+.stApp [data-testid="stAlertContentError"]::before { content: "×"; color: var(--danger); }
+.stApp [data-testid="stAlertContentSuccess"]::before { content: "✓"; color: var(--success); }
+
+/* Поля ввода (components/Field.md): белое поле, рамка border-strong, кольцо фокуса. */
+.stApp [data-testid="stTextInputRootElement"], .stApp [data-testid="stTextAreaRootElement"], .stApp [data-testid="stNumberInputContainer"], .stApp [data-testid="stDateInputField"], .stApp [data-baseweb="select"] > div { background: var(--surface-raised); border-color: var(--border-strong); border-radius: var(--radius-sm); }
+.stApp [data-testid="stTextInputRootElement"] *, .stApp [data-testid="stTextAreaRootElement"] *, .stApp [data-testid="stNumberInputContainer"] > div, .stApp [data-testid="stNumberInputField"], .stApp [data-baseweb="select"] > div > div { background: var(--surface-raised); color: var(--ink); font-variant-numeric: tabular-nums; }
+.stApp [data-testid="stNumberInputStepDown"], .stApp [data-testid="stNumberInputStepUp"] { background: var(--surface-raised); color: var(--ink-muted); }
+/* Выпадающий список Streamlit 1.64 — react-aria ComboBox, а не baseweb select: правило выше
+   его не задевает, и поле оставалось серым (secondaryBackgroundColor) со светлой рамкой —
+   хвост прогона «дальше» 03.11. Белое поле и рамка border-strong, как у остальных полей. */
+.stApp [data-testid="stSelectbox"] .react-aria-ComboBox [role="group"], .stApp [data-testid="stMultiSelect"] .react-aria-ComboBox [role="group"] { background: var(--surface-raised); border-color: var(--border-strong); border-radius: var(--radius-sm); color: var(--ink); }
+.stApp [data-testid="stSelectbox"] .react-aria-ComboBox [role="group"]:focus-within, .stApp [data-testid="stMultiSelect"] .react-aria-ComboBox [role="group"]:focus-within { border-color: var(--focus); }
+.stApp [data-testid="stNumberInputStepDown"]:hover, .stApp [data-testid="stNumberInputStepUp"]:hover { background: var(--accent-soft); color: var(--accent-ink); }
+.stApp [data-testid="stWidgetLabel"] p { font: 600 13px/18px var(--font-sans); color: var(--ink); }
+.vs-field__hint { font-size: 12px; line-height: 16px; color: var(--ink-muted); margin: 0; }
+
+/* Выбранные значения в списках — бейджи brand (components/StatusBadge.md), не яркий изумруд. */
+.stApp [data-baseweb="tag"] { background: var(--accent-soft); color: var(--accent-ink); border-radius: var(--radius-xs); }
+.stApp [data-baseweb="tag"] span, .stApp [data-baseweb="tag"] svg { color: var(--accent-ink); fill: var(--accent-ink); }
+
+/* Таблицы (components/DataTable.md) — рамка и радиус; заголовки — прописными (app/ui.py). */
+.stApp [data-testid="stDataFrame"], .stApp [data-testid="stTable"] { border-radius: var(--radius-md); }
+.stApp [data-testid="stTable"] th { background: var(--surface-sunken); font: 600 12px/16px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-muted); }
+
+/* Итоговые цифры (components/Figures.md): st.metric — как карточка vs-figure. */
+.stApp [data-testid="stMetric"] { background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); }
+.stApp [data-testid="stMetricLabel"], .stApp [data-testid="stMetricLabel"] * { white-space: normal; overflow: visible; text-overflow: clip; }
+.stApp [data-testid="stMetricLabel"] p { font: 600 12px/16px var(--font-sans); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); }
+.stApp [data-testid="stMetricValue"] { font: 700 32px/36px var(--font-display); letter-spacing: -.01em; font-variant-numeric: tabular-nums; color: var(--ink); }
+.vs-figures { margin: var(--space-2) 0; }
+
+/* Раскрывающиеся блоки внутри панелей — без лишней тени. */
+.stApp [data-testid="stExpander"] details { border-color: var(--border); border-radius: var(--radius-md); background: var(--surface-raised); }
+
+/* Статусы шагов в боковой панели */
+.vs-status-list { display: flex; flex-direction: column; gap: var(--space-1); margin: 0 0 var(--space-2); }

@@ -1,0 +1,39 @@
+{
+  "_формат": 1,
+  "_описание": "ШАБЛОН локального слоя норм компании (С4, 30.10.2026; все разделы — 03.11.2026). Скопируйте в data/local/norms_firm.json (папка data/local/ — в .gitignore, внутренние ставки компании в git не кладутся) и заполните value + source (файл / лист / ячейка). null — не перекрывать. Разделы: 'cost_common' — ОБЩИЕ ставки всех разделов (оклады по должностям, цены топлива — 'inputs'; начисления на ФОТ, содержание партии, проезд, расход топлива, резерв — 'norms', ключи как в data/norms/cost_common.json); '<раздел>_cost' — особые ставки раздела (ключи как в data/norms/<раздел>_cost.json; у геологии в 'inputs' — оклады буровой партии). Старшинство: раздел → общие → seed (core/cost.py::load_cost_norms). kind: 'accounting' — ставка от бухгалтерии (ставит tools/import_stavki.py), 'price' — цена (Форма 2.2), пусто — не указано; date — дата ставки ГГГГ-ММ-ДД. Заполнять удобнее шаблоном docs/templates/stavki_sebestoimosti.xlsx и командой python -m tools.import_stavki.",
+  "cost_common": {
+    "inputs": {
+      "salary_field_lead": {"value": null, "source": "", "kind": "", "date": "", "note": "ведущий инженер в поле, руб./мес"},
+      "salary_field_engineer": {"value": null, "source": "", "kind": "", "date": "", "note": "инженер в поле, руб./мес"},
+      "salary_field_driver": {"value": null, "source": "", "kind": "", "date": "", "note": "водитель (все разделы, в т.ч. геология), руб./мес"},
+      "salary_field_worker": {"value": null, "source": "", "kind": "", "date": "", "note": "рабочий в поле (не буровой), руб./мес"},
+      "salary_office_chief": {"value": null, "source": "", "kind": "", "date": "", "note": "главный специалист камеральной группы, руб./мес"},
+      "salary_office_lead": {"value": null, "source": "", "kind": "", "date": "", "note": "руководитель камеральной группы, руб./мес"},
+      "salary_office_engineer": {"value": null, "source": "", "kind": "", "date": "", "note": "инженер камеральной группы (все разделы, в т.ч. геология), руб./мес"},
+      "salary_office_technician": {"value": null, "source": "", "kind": "", "date": "", "note": "техник камеральной группы, руб./мес"},
+      "fuel_price_ai92": {"value": null, "source": "", "kind": "", "date": "", "note": "руб./л без НДС"},
+      "fuel_price_diesel": {"value": null, "source": "", "kind": "", "date": "", "note": "руб./л без НДС"}
+    },
+    "norms": {
+      "field_allowance_per_person_month": {"value": null, "source": "", "kind": "", "date": "", "assumption": false},
+      "housing_per_person_month": {"value": null, "source": "", "kind": "", "date": "", "assumption": false},
+      "travel_per_person": {"value": null, "source": "", "kind": "", "date": "", "assumption": false}
+    }
+  },
+  "geology_cost": {
+    "inputs": {
+      "salary_worker": {"value": null, "source": "", "kind": "", "date": "", "note": "оклад бурового рабочего с районным коэффициентом, руб./мес"},
+      "salary_itr": {"value": null, "source": "", "kind": "", "date": "", "note": "оклад ИТР в поле, руб./мес"},
+      "salary_driver": {"value": null, "source": "", "kind": "", "date": "", "note": "оклад водителя, руб./мес (пусто — общий cost_common.salary_field_driver)"},
+      "salary_cook": {"value": null, "source": "", "kind": "", "date": "", "note": "оклад повара, руб./мес"},
+      "salary_office": {"value": null, "source": "", "kind": "", "date": "", "note": "оклад камеральщика, руб./мес (пусто — общий cost_common.salary_office_engineer)"}
+    },
+    "norms": {}
+  },
+  "geodesy_cost": {"norms": {"survey_ha_per_person_month": {"value": null, "source": "", "kind": "", "date": "", "assumption": false}}},
+  "geophysics_cost": {"norms": {"points_per_person_month": {"value": null, "source": "", "kind": "", "date": "", "assumption": false}}},
+  "ecology_cost": {"norms": {
+    "eco_ha_per_person_month": {"value": null, "source": "", "kind": "", "date": "", "assumption": false},
+    "eco_lab_per_sample": {"value": null, "source": "", "kind": "", "date": "", "assumption": false}
+  }}
+}

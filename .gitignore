@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+
+# Виртуальное окружение
+venv/
+.venv/
+
+# Секреты и локальные настройки
+.env
+.streamlit/secrets.toml
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Справочник SQLite собирается из reference_data/ (data/build_references.py); сохранённые сметы —
+# данные пользователя
+data/*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+
+# Локальный слой ставок себестоимости (только на своём ПК; шаблон — data/norms/norms_firm.example.json)
+/data/local/
+
+# Сгенерированные сметы и выгрузки
+*.xlsx
+!/reference_data/*.xlsx
+!/docs/templates/*.xlsx
+
+# Сборка exe
+releases/
+*.spec
+*.exe
+BudgetPIR_port_*.txt
+BudgetPIR_error.log
+
+# Временное
+work/
+.public_copy
