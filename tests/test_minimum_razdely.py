@@ -40,11 +40,12 @@ from modules.hydromet import cost as hydromet
 
 PARTY = {"geodesy": geodesy, "geophysics": geophysics, "ecology": ecology, "hydromet": hydromet}
 
-# Выдуманные «себестоимостные» ставки, руб./мес и руб./л.
+# Выдуманные «себестоимостные» ставки, руб./мес и руб./л. — нарочно некруглые, чтобы не
+# совпасть ни с одной настоящей ставкой (В-77).
 FAKE_COMMON = {
-    "salary_field_lead": 140000, "salary_field_engineer": 120000, "salary_field_driver": 100000,
-    "salary_field_worker": 90000, "salary_office_chief": 130000, "salary_office_lead": 120000,
-    "salary_office_engineer": 100000, "salary_office_technician": 80000,
+    "salary_field_lead": 138_765, "salary_field_engineer": 118_765, "salary_field_driver": 98_765,
+    "salary_field_worker": 87_654, "salary_office_chief": 127_654, "salary_office_lead": 117_654,
+    "salary_office_engineer": 97_654, "salary_office_technician": 76_543,
     "fuel_price_ai92": 60, "fuel_price_diesel": 70,
 }
 FAKE_SOURCE = "ТЕСТ: выдуманная ставка, не компании"
@@ -184,12 +185,15 @@ GEOLOGY_FULL = geology.CostInputs(
 
 
 def test_geology_numbers_unchanged_and_shared_is_neutral_by_default():
-    norms = load_norms("geology_cost", use_local=False)
+    from tests.test_geology_cost import with_travel
+
+    norms = with_travel(load_norms("geology_cost", use_local=False))
     base = geology.compute_cost(GEOLOGY_FULL, 1050, 100, norms)
-    assert base.cost == pytest.approx(6303490.5496)  # как в test_geology_cost.py
+    assert base.cost == pytest.approx(6249100.3256)  # как в test_geology_cost.py
     assert geology.compute_cost(GEOLOGY_FULL, 1050, 100, norms, SharedCosts()).cost == base.cost
     # нормы геологии с общим слоем — те же значения, что seed геологии
-    assert geology.compute_cost(GEOLOGY_FULL, 1050, 100, seed("geology_cost")).cost == base.cost
+    assert geology.compute_cost(GEOLOGY_FULL, 1050, 100, with_travel(seed("geology_cost"))).cost \
+        == base.cost
     assert isinstance(base, CostResult) and base.meters == 1050
     assert base.cost_per_meter == pytest.approx(base.cost / 1050)
     kinds = {line.key: line.kind for line in base.lines}
@@ -223,15 +227,16 @@ def test_geophysics_full_calculation_by_hand():
               "office_months": 1.5, "mileage_uaz": 1000}
     r = compute("geophysics", values, 300)
     assert r.complete and r.field_months == pytest.approx(1.0) and r.field_headcount == 3
-    fot = 140000 + 2 * 120000 + 2 * 100000 * 1.5
+    fot = 138_765 + 2 * 118_765 + 2 * 97_654 * 1.5
     assert r.fot == pytest.approx(fot)
     a = {line.key: line.amount for line in r.lines}
     assert a["social"] == pytest.approx(fot * 0.302)
     assert a["field_allowance_per_person_month"] == pytest.approx(3 * 18000)
     assert a["housing_per_person_month"] == pytest.approx(3 * 30000)
-    assert a["travel"] == pytest.approx(3 * 90000)
+    travel = seed("geophysics_cost")["travel_per_person"].value  # seed-допущение
+    assert a["travel"] == pytest.approx(3 * travel)
     assert a["fuel_ai92"] == pytest.approx(1000 / 100 * 14 * 60)
-    direct = fot * 1.302 + 3 * (18000 + 30000 + 500 + 3000) + 3 * 90000 + 1000 / 100 * 14 * 60
+    direct = fot * 1.302 + 3 * (18000 + 30000 + 500 + 3000) + 3 * travel + 1000 / 100 * 14 * 60
     assert r.direct == pytest.approx(direct)
     assert r.overhead == pytest.approx(fot * 0.482) and r.taxes == pytest.approx(fot * 0.0153)
     assert r.cost == pytest.approx((direct + fot * 0.482 + fot * 0.0153) * 1.0852)

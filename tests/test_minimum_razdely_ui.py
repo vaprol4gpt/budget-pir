@@ -13,8 +13,8 @@ from core.persistence import SmetaStore
 from modules.geophysics import cost as geophysics
 from tests.test_streamlit_app import _click, goto, open_app
 
-SALARIES = {"salary_field_lead": 140000.0, "salary_field_engineer": 120000.0,
-            "salary_office_engineer": 100000.0}
+SALARIES = {"salary_field_lead": 138_765.0, "salary_field_engineer": 118_765.0,
+            "salary_office_engineer": 97_654.0}  # условные, нарочно некруглые (В-77)
 
 
 @pytest.fixture
@@ -99,7 +99,7 @@ def test_page4_geophysics_minimum_saved_and_reopened(isolated_smeta_db):
     assert any("Расчёт себестоимости сохранён" in s for s in _texts(at.success))
     version_id = at.session_state["staged_sessions"]["geophysics"].version_id
     inputs, summary, _ = SmetaStore().load_cost_calc_for_chain(version_id)
-    assert inputs["field_engineer"] == 4 and inputs["salary_field_lead"] == 140000.0
+    assert inputs["field_engineer"] == 4 and inputs["salary_field_lead"] == 138_765.0
     assert inputs["_shared"]["mobilization"] == 100000.0
     assert summary["cost"] == pytest.approx(with_shared.cost)
 
@@ -109,7 +109,7 @@ def test_page4_geophysics_minimum_saved_and_reopened(isolated_smeta_db):
     goto(at2, "minimum")
     assert at2.exception == []
     assert at2.number_input(key="cost_geophysics_field_engineer").value == 4
-    assert at2.number_input(key="cost_common_salary_field_lead").value == 140000.0
+    assert at2.number_input(key="cost_common_salary_field_lead").value == 138_765.0
     assert at2.number_input(key="cost_shared_mobilization").value == 100000.0
 
 
@@ -144,7 +144,7 @@ def test_hydromet_without_field_months_says_operator_enters_it(isolated_smeta_db
     assert any("срок полевых работ (нормы выработки нет — вводит оператор)" in i
                for i in _texts(at.info))
     at.number_input(key="cost_hydromet_field_months").set_value(0.5)
-    at.number_input(key="cost_common_salary_field_lead").set_value(140000.0)
+    at.number_input(key="cost_common_salary_field_lead").set_value(138_765.0)
     at.run(timeout=30)
     assert at.exception == []
     assert not any("Не заполнено" in i for i in _texts(at.info))

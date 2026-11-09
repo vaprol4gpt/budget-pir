@@ -1707,8 +1707,11 @@ def test_open_all_sections_of_demo_calculation_goes_to_budget(demo_db):
     table = _open_calculation(at, make_demo.ROAD_NAME)
     sections = list(table["Раздел"])[:-1]
     assert len(sections) == 5
+    # снижение цены — из расчёта (доводка 09.11): итог — как в сводной эталона после снижения
+    _checks, budgets, _errors = make_demo.expected_checks(demo_db)
     assert table["Итого с НДС"].iloc[-1] == pytest.approx(
-        sum(r.total_with_vat for r in rows), abs=0.05)
+        budgets[make_demo.ROAD_NAME]["total_with_vat_sum"], abs=0.05)
+    assert sum(r.total_with_vat for r in rows) > table["Итого с НДС"].iloc[-1]  # было снижение
     assert at.session_state["calc_date"].isoformat() == make_demo.DATE
     assert at.session_state["_run_context"].object_data.code == "Т-01"
 
@@ -1727,8 +1730,10 @@ def test_open_second_calculation_asks_and_replaces_all_sections(demo_db):
     _click(at, "Открыть все разделы расчёта")
     assert any("уже есть ввод разделов" in w for w in _texts(at.warning))
     table = _open_calculation(at, make_demo.KARIER_NAME)
-    rows, _obj, _errors = make_demo.read_back(demo_db, make_demo.KARIER_NAME)
     assert len(table) == 4 + 1 and not any("Геофизика" in r for r in table["Раздел"])
+    _checks, budgets, _errors = make_demo.expected_checks(demo_db)
     assert table["Итого с НДС"].iloc[-1] == pytest.approx(
-        sum(r.total_with_vat for r in rows), abs=0.05)
+        budgets[make_demo.KARIER_NAME]["total_with_vat_sum"], abs=0.05)  # ×0,85 — из расчёта
+    assert at.number_input(key="obj_red_budget").value == pytest.approx(0.85)
+    assert at.number_input(key="obj_red_hydromet").value == pytest.approx(1.0)  # у Карьера нет
     assert at.session_state["_run_context"].object_data.code == "Т-02"

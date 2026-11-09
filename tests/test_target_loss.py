@@ -330,7 +330,7 @@ def test_minimum_above_estimate_reduction_impossible():
     """Сценарий А: себестоимость выше самой сметы — «снижение невозможно», а не совет
     «коэффициент сводной не ниже 1,098»; так же без снижения и без целевой."""
     for aggregator in (geology_only(budget_reduction=0.9), geology_only()):
-        loss = target_loss(aggregator, None, omin(90000.0, {"geology": 90000.0}))
+        loss = target_loss(aggregator, None, omin(91_234.0, {"geology": 91_234.0}))
         assert "снижение невозможно" in loss.text and "не ниже" not in loss.text
 
 

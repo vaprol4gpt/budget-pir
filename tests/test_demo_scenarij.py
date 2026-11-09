@@ -66,8 +66,8 @@ EXPECTED = {
 OBJECT_ASSUMPTIONS = 1                     # допущения уровня данных объекта
 EXPECTED_TOTAL_ASSUMPTIONS = sum(e["assumptions"] for e in EXPECTED.values()) + OBJECT_ASSUMPTIONS
 EXPECTED_GEOLOGY_MAX = "3 405 844,86"      # смета геологии без НДС
-EXPECTED_GEOLOGY_MIN = "3 113 742,66"      # себестоимость геологии
-EXPECTED_GEOLOGY_COEF = "0,914"            # минимум / максимум
+EXPECTED_GEOLOGY_MIN = "3 059 048,58"      # себестоимость геологии
+EXPECTED_GEOLOGY_COEF = "0,898"            # минимум / максимум
 EXPECTED_TOTAL = 10_515_026.77             # итого с НДС, без снижения
 EXPECTED_TOTAL_NO_VAT = 8_618_874.40
 EXPECTED_REDUCED_TOTAL = 9_463_524.09      # итого с НДС при снижении сводной ×0,9
@@ -251,7 +251,7 @@ def test_demo_scenario(isolated_smeta_db, no_network, captured_downloads):
         EXPECTED_TOTAL_NO_VAT, abs=0.005)
     assert any(f"Итог содержит {EXPECTED_TOTAL_ASSUMPTIONS} допущений" in w for w in _texts(at.warning))
 
-    # снижение сводной ×0,9: ниже безопасного коэффициента геологии (0,914) — предупреждение
+    # снижение сводной ×0,9: в публичной копии не ниже коэффициента геологии (0,898) — без предупреждения
     at.number_input(key="obj_red_budget").set_value(BUDGET_REDUCTION)
     at.run(timeout=30)
     assert at.exception == []
@@ -259,7 +259,7 @@ def test_demo_scenario(isolated_smeta_db, no_network, captured_downloads):
     total = table["Итого с НДС"].iloc[-1]
     assert total == pytest.approx(EXPECTED_REDUCED_TOTAL, abs=0.005)
     assert total == pytest.approx(EXPECTED_TOTAL * BUDGET_REDUCTION, abs=0.02)
-    assert any("ниже минимума" in w for w in _texts(at.warning))
+    assert not any("ниже минимума" in w for w in _texts(at.warning))
 
     # Excel сводного бюджета: открывается openpyxl, итог = на экране
     data = captured_downloads.get("download_budget")

@@ -40,8 +40,8 @@ FAKE_SOURCE = "ТЕСТ: выдуманная ставка, не компани�
 FAKE_DATE = "2026-11-01"
 # Выдуманные «себестоимостные» ставки: оклады с районным, руб./мес; нормы на человека.
 FAKE_SALARIES = {
-    "salary_worker": 120000, "salary_itr": 140000, "salary_driver": 100000,
-    "salary_cook": 80000, "salary_office": 110000,
+    "salary_worker": 119_876, "salary_itr": 139_876, "salary_driver": 103_456,
+    "salary_cook": 81_234, "salary_office": 111_234,  # нарочно некруглые (В-77)
 }
 FAKE_NORMS = {
     "field_allowance_per_person_month": 15000, "housing_per_person_month": 25000,
@@ -283,7 +283,7 @@ def test_ui_small_object_shows_impossible_reduction(isolated_smeta_db):
 
     at = _ui_to_minimum()
     for name in ("worker", "itr", "driver", "cook", "office"):
-        at.number_input(key=f"cost_salary_{name}").set_value(150000.0)
+        at.number_input(key=f"cost_salary_{name}").set_value(152_345.67)
     at.number_input(key="cost_office_staff").set_value(13)
     at.number_input(key="cost_office_months").set_value(2.0)
     at.run(timeout=30)

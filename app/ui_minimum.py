@@ -71,6 +71,10 @@ PARTY_MODULES = {
 SECTION_INPUTS_KEY = "cost_inputs_by_module"
 COMMON_INPUTS_KEY = "cost_inputs_common"
 SHARED_KEY = "cost_shared"
+# Пометка о ставках, сохранённая вместе с вводом себестоимости (демо-база:
+# «демонстрационные ставки, не калиброваны»): ключ в сохранённом вводе и в состоянии.
+RATES_NOTE_KEY = "_rates_note"
+RATES_NOTES_STATE = "cost_rates_notes"
 
 SHARED_FIELDS = (
     ("mobilization", "Организация и ликвидация работ (мобилизация), руб.",
@@ -191,6 +195,26 @@ def apply_section_cost_inputs(code: str, data: dict | None) -> None:
                 if f.name in common:
                     st.session_state[f"cost_common_{f.name}"] = widget_value(f.kind, common[f.name])
     apply_shared(shared)
+
+
+def set_rates_note(code: str, note: str | None) -> None:
+    """Пометка о ставках раздела из открытой версии (нет — убирается)."""
+    notes = st.session_state.setdefault(RATES_NOTES_STATE, {})
+    if note:
+        notes[code] = str(note)
+    else:
+        notes.pop(code, None)
+
+
+def rates_notes() -> list[str]:
+    """Пометки о ставках открытых разделов — без повторов, в порядке разделов."""
+    notes = st.session_state.get(RATES_NOTES_STATE, {})
+    return list(dict.fromkeys(notes[c] for c in ui.MODULES if c in notes))
+
+
+def render_rates_notes() -> None:
+    for note in rates_notes():
+        st.info(note)
 
 
 def apply_shared(data: dict | None) -> None:
@@ -552,6 +576,7 @@ def render_party_section(code: str) -> None:
 def render_minimum_page() -> None:
     """Страница «4. Минимальный бюджет» (см. докстринг модуля)."""
     code = st.session_state.get("module_choice") or next(iter(ui.MODULES))
+    render_rates_notes()
     render_summary_block(all_sections())
     render_shared_block()
     st.caption(f"Раздел для расчёта — «{ui.MODULES[code]['label']}» (выбор — в боковой панели).")
@@ -565,6 +590,7 @@ def render_object_summary(geology=None) -> None:
     """Страница «5. Сводный бюджет»: минимум по разделам и по объекту. `geology` —
     себестоимость геологии, уже посчитанная на этом прогоне (не считать дважды)."""
     numbers = all_sections(geology)
+    render_rates_notes()
     st.markdown("**Все разделы**")
     render_sections_table(numbers)
     minimum, red = object_numbers(numbers)

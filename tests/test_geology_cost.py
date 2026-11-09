@@ -1,6 +1,7 @@
 """Себестоимость геологии (вариант Б) и коэффициент снижения (Э6
 дорожной карты, 25.10.2026)."""
 
+import dataclasses
 from pathlib import Path
 
 import pytest
@@ -10,8 +11,17 @@ from core.persistence import SmetaStore
 from core.stages import SOURCE_INPUT, VolumeLine, make_result
 from modules.geology.cost import CostInputs, compute_cost, reduction
 
-# Seed-допущения (data/norms), без локального слоя компании этого ПК (С4).
-NORMS = load_norms("geology_cost", use_local=False)
+# Seed-допущения (data/norms), без локального слоя компании этого ПК (С4). Проезд — условное
+# число теста (не норма и не ставка): расчёт «вручную» не зависит от значения seed-нормы.
+TEST_TRAVEL = 86_420.0
+
+
+def with_travel(norms, value=TEST_TRAVEL):
+    """Нормы с условным проездом на человека (остальное — как есть)."""
+    return {**norms, "travel_per_person": dataclasses.replace(norms["travel_per_person"], value=value)}
+
+
+NORMS = with_travel(load_norms("geology_cost", use_local=False))
 
 FULL = CostInputs(
     brigades=3, itr=2, drivers=2, cooks=1, office_staff=2, office_months=2,
@@ -45,19 +55,19 @@ def test_full_calculation_by_hand():
     amounts = {line.key: line.amount for line in result.lines}
     assert amounts["social"] == pytest.approx(860000 * 0.302)
     assert amounts["field_allowance_per_person_month"] == pytest.approx(14 * 18000)
-    assert amounts["travel"] == pytest.approx(14 * 90000)
+    assert amounts["travel"] == pytest.approx(14 * TEST_TRAVEL)
     assert amounts["fuel_ai92"] == pytest.approx(1000 / 100 * 14 * 60)
     assert amounts["fuel_diesel"] == pytest.approx(3 * 1 * 320 * 12 * 70)  # УРБ
     assert amounts["lowboy"] == pytest.approx(2 * 100 * 450 * 3)
     assert amounts["tools"] == pytest.approx(1050 * (588 + 500))
     assert amounts["lab"] == pytest.approx(10 * 5300)
-    assert result.direct == pytest.approx(5380920)
+    assert result.direct == pytest.approx(5330800)  # 14 × 86 420 проезд
     assert result.overhead == pytest.approx(860000 * 0.482)
     assert result.taxes == pytest.approx(860000 * 0.0153)
-    assert result.contingency == pytest.approx(0.0852 * (5380920 + 414520 + 13158))
-    assert result.cost == pytest.approx(6303490.5496)
-    assert result.cost_per_meter == pytest.approx(6303490.5496 / 1050)
-    assert result.fot_share == pytest.approx(860000 / 6303490.5496)
+    assert result.contingency == pytest.approx(0.0852 * (5330800 + 414520 + 13158))
+    assert result.cost == pytest.approx(6249100.3256)
+    assert result.cost_per_meter == pytest.approx(6249100.3256 / 1050)
+    assert result.fot_share == pytest.approx(860000 / 6249100.3256)
 
 
 def test_missing_salaries_and_fuel_prices_make_result_incomplete():

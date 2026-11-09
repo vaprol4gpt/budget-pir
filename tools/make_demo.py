@@ -22,16 +22,28 @@
    сверяет со сводной эталона в допусках эталонных тестов. Отклонение сверх
    допуска — код выхода 1.
 
+Дополнительно (доводка 09.11 — демо заполнено целиком, все страницы):
+- данные объекта полностью: наименование, условный регион и маршрут, расстояние,
+  даты, сезон, примечание — с пометкой «демонстрационные данные» (без
+  заказчика и реальной географии); параметры ТЗ и ключевые объёмы — из
+  подтверждённых ведомостей эталона (`demo_tz`);
+- минимальный бюджет всех разделов и общие затраты объекта — расчёт
+  себестоимости при версии сметы каждого раздела (`SmetaStore.save_cost_calc`,
+  тот же ввод, что сохраняет страница «4. Минимальный бюджет»). Ставки —
+  ДЕМОНСТРАЦИОННЫЕ: условные некруглые оклады, цены топлива и общие затраты
+  (`DEMO_COMMON`, `DEMO_GEOLOGY`, `DEMO_SHARED`), не ставки компании и не
+  локальный слой; на экране — пометка `RATES_NOTE`. Состав партии — правило
+  раздела («Предложить состав», `core/cost.py::suggested_party`); минимум выше
+  максимума не подгоняется — программа сама пишет «снижение невозможно»;
+- коэффициенты снижения цены — в данных объекта; «Открыть все разделы
+  расчёта» подставляет их на странице 5 (открытие одной версии — нет).
+
 Не сохраняется (честно, без выдумок):
-- минимальный бюджет (себестоимость): ставок себестоимости (оклады) в
-  репозитории нет — расчёт минимума был бы на выдуманных числах;
 - у Карьера нет геофизики — в эталоне нет листа ИГФИ, раздел не создаётся;
 - три листа ИГИ Карьера сведены в одну смету геологии с суммой объёмов (в
   бюджете одна смета на раздел — так сделал бы оператор);
-- коэффициенты снижения цены сохраняются в данных объекта, но открытие версии
-  их на странице «5. Сводный бюджет» не подставляет (решение по цене объекта —
-  ввод на странице 5, `app/ui.py::PRICE_DECISION_FIELDS`); программа при
-  открытии сообщает, какое снижение было в версии.
+- в параметрах ТЗ не заданы мерзлота, сейсмичность и число ИССО — в эталонных
+  листах их нет, выдумывать не стали.
 
 Запуск из корня проекта:
     .venv/Scripts/python.exe -X utf8 -m tools.make_demo [путь к базе]
@@ -60,6 +72,64 @@ LABELS = {
     "geology": "Геология", "geophysics": "Геофизика", "geodesy": "Геодезия",
     "ecology": "Экология", "hydromet": "Гидрометеорология",
 }
+
+# --- демонстрационные данные (не данные компании и не эталона) ---------------------
+
+DEMO_MARK = "демонстрационные данные"
+# Сведения об объекте, которых в эталонных листах нет: условные. Заказчика нет; регион
+# и маршрут — без реальной географии. Расстояние «Автодороги» не задаётся: пункт
+# внутреннего транспорта эталона (т.4 п.3) в справочнике диапазоном не описан — любое
+# расстояние поменяло бы пункт и итог эталона или дало бы предупреждение.
+OBJECT_INFO = {
+    "road": {
+        "region": f"Условный регион ({DEMO_MARK})",
+        "route": f"База — участок трассы, автомобильным транспортом ({DEMO_MARK})",
+        "start_date": "2026-07-01", "end_date": "2026-12-15",
+        "season": "летне-осенний, с переходом на зимний (неблагоприятный) период",
+        "note": (f"Демонстрационный объект: объёмы и параметры смет — из учебного эталона; регион, "
+                 f"маршрут, даты и ставки себестоимости — условные ({DEMO_MARK})."),
+        "stage": f"Изыскания для подготовки проектной документации ({DEMO_MARK})",
+    },
+    "karier": {
+        "region": f"Условный регион ({DEMO_MARK})",
+        "route": f"База — карьер, 12 км по грунтовой дороге ({DEMO_MARK})",
+        "start_date": "2026-08-01", "end_date": "2026-12-20",
+        "season": "летне-осенний, с переходом на зимний (неблагоприятный) период",
+        "note": (f"Демонстрационный объект: объёмы и параметры смет — из учебного эталона; регион, "
+                 f"маршрут, даты и ставки себестоимости — условные ({DEMO_MARK})."),
+        "stage": f"Изыскания для подготовки проектной документации ({DEMO_MARK})",
+    },
+}
+
+# Ставки себестоимости — ДЕМОНСТРАЦИОННЫЕ: условные некруглые числа, руб./мес (оклады с
+# районным, без взносов) и руб./л. Не ставки компании и не локальный слой; калибровки нет.
+RATES_NOTE = (
+    "Демонстрационные ставки, не калиброваны: оклады, цены топлива и общие затраты объекта в этом "
+    "расчёте — условные числа для показа работы программы, не ставки компании. Минимум по ним — "
+    "пример расчёта, а не настоящая себестоимость."
+)
+DEMO_COMMON = {
+    "salary_field_lead": 112_345.0, "salary_field_engineer": 96_789.0,
+    "salary_field_driver": 78_901.0, "salary_field_worker": 67_891.0,
+    "salary_office_chief": 123_457.0, "salary_office_lead": 109_877.0,
+    "salary_office_engineer": 89_013.0, "salary_office_technician": 64_321.0,
+    "fuel_price_ai92": 61.7, "fuel_price_diesel": 69.3,
+}
+DEMO_GEOLOGY = {
+    "salary_worker": 72_345.0, "salary_itr": 96_789.0, "salary_driver": 78_901.0,
+    "salary_cook": 58_765.0, "salary_office": 89_013.0,
+    "fuel_price_ai92": 61.7, "fuel_price_diesel": 69.3,
+}
+DEMO_SHARED = {"mobilization": 412_345.0, "delivery": 286_543.0, "base_per_month": 97_531.0}
+# Состав партии и сроки: численность — правило раздела («Предложить состав») на целевой
+# срок поля; камералка, пробег — условные. Где нормы выработки нет (ИГМИ) или объём
+# нормы в ведомости 0 (экология Автодороги — радиационного обследования нет) — срок поля
+# вводится, как это делает оператор.
+DEMO_FIELD_MONTHS = {"geophysics": 1.0, "geodesy": 1.5, "ecology": 1.0, "hydromet": 1.0}
+DEMO_OFFICE_MONTHS = {"geology": 1.5, "geophysics": 1.0, "geodesy": 1.5, "ecology": 1.0, "hydromet": 1.0}
+DEMO_MILEAGE_UAZ = {"geology": 3_150.0, "geophysics": 1_850.0, "geodesy": 2_650.0, "ecology": 1_450.0,
+                    "hydromet": 1_250.0}
+GEOLOGY_FIELD_MONTHS = 1.5  # целевой срок бурения: бригад = метраж / (норма × срок)
 
 
 @dataclass
@@ -212,6 +282,146 @@ def _split_ecology(module, full_input):
     )
 
 
+# --- параметры ТЗ и минимум (доводка 09.11) ----------------------------------------
+
+
+def _qty(lines, key) -> float | None:
+    line = lines.get(key)
+    return None if line is None or not line.qty else float(line.qty)
+
+
+def demo_tz(kind: str, volumes: dict, inputs: dict | None = None) -> dict:
+    """Параметры ТЗ и ключевые объёмы — из подтверждённых ведомостей разделов
+    (`volumes`: {раздел: строки ведомости}; `inputs`: {раздел: ввод ведомости} — для
+    масштаба и сечения съёмки), то есть из эталона, а не выдумка.
+    Не задаются: мерзлота, сейсмичность, число ИССО — их в эталонных листах нет.
+    Возвращает `TzParams.to_dict()`."""
+    from core.tz import OBJECT_AREA, OBJECT_LINEAR, TzParams
+    from modules.ecology import module as eco
+    from modules.geodesy import module as geo
+    from modules.geology.module import DRILLING_VOLUME_KEY_PREFIX
+    from modules.hydromet import module as h
+
+    keys: dict[str, dict] = {}
+    params: dict = {"object_kind": OBJECT_LINEAR if kind == "road" else OBJECT_AREA,
+                    "stage": OBJECT_INFO[kind]["stage"], "sections": list(volumes)}
+    if "geology" in volumes:
+        lines = volumes["geology"]
+        holes = _qty(lines, "drilling_count")
+        meters = sum(line.qty or 0 for k, line in lines.items()
+                     if k.startswith(DRILLING_VOLUME_KEY_PREFIX))
+        keys["geology"] = {"holes_count": holes, "drilling_total_m": meters or None,
+                           "rekognoscirovka_km": _qty(lines, "rekognoscirovka"),
+                           "gidronablyudeniya_m": _qty(lines, "gidronablyudeniya")}
+        if holes:
+            params["holes_count"] = int(holes)
+            params["hole_depth_m"] = round(meters / holes, 1) if meters else None
+    if "geophysics" in volumes:
+        lines = volumes["geophysics"]
+        # тип волн МПВ: есть строка поперечных волн — оба типа (PS), иначе продольные (P)
+        keys["geophysics"] = {"vez_points": _qty(lines, "vez"), "mpv_observations": _qty(lines, "mpv"),
+                              "mpv_waves": "PS" if _qty(lines, "mpv_s") else "P"}
+    if "geodesy" in volumes:
+        lines = volumes["geodesy"]
+        area = sum(line.qty or 0 for k, line in lines.items() if k.startswith("topo_survey."))
+        # основная съёмка — строка с наибольшей площадью: её масштаб и сечение — в ТЗ,
+        # её площадь — ключевой объём (так его понимает «Предложить ведомость»)
+        rows = [r for r in (inputs or {}).get("geodesy", {}).get(geo.VK_TOPO_SURVEYS) or []
+                if r.get("topo_area")]
+        main = max(rows, key=lambda r: r["topo_area"]) if rows else None
+        if main:
+            params["survey_scale"], params["survey_section_m"] = main["topo_scale"], main["topo_section"]
+        keys["geodesy"] = {"survey_area_ha": (main or {}).get("topo_area") or area or None,
+                           "trassa_km": _qty(lines, geo.VK_TRASSA),
+                           "oporny_points": _qty(lines, geo.VK_OPORNY),
+                           "privyazka_points": _qty(lines, geo.VK_PRIVYAZKA)}
+        if kind == "road" and keys["geodesy"]["trassa_km"]:
+            params["length_km"] = keys["geodesy"]["trassa_km"]
+            if params.get("holes_count"):  # шаг скважин по трассе — производное: длина / число скважин
+                params["hole_spacing_m"] = round(params["length_km"] * 1000 / params["holes_count"])
+            if main:  # ширина полосы съёмки — производное: площадь основной съёмки / длина трассы
+                params["strip_width_m"] = round(main["topo_area"] * 10_000 / (params["length_km"] * 1000))
+        if kind == "karier" and area:
+            params["area_ha"] = area
+    if "ecology" in volumes:
+        lines = volumes["ecology"]
+        keys["ecology"] = {"recon_km": _qty(lines, eco.VK_RECON_LENGTH),
+                           "observation_points": _qty(lines, eco.VK_OBSERVATION_POINTS),
+                           "radiation_ha": _qty(lines, eco.VK_RADIATION),
+                           "surface_water_samples": _qty(lines, "sampling_surface_water_chemical"),
+                           "radionuclide_samples": _qty(lines, "sampling_soil_radionuclides")}
+    if "hydromet" in volumes:
+        lines = volumes["hydromet"]
+        keys["hydromet"] = {"watercourses": _qty(lines, h.VK_MORPHOMETRIC),
+                            "basins": _qty(lines, h.VK_BASIN_AREA),
+                            "sounding_stvors": _qty(lines, h.VK_SOUNDING_STVOR),
+                            "flow_measurements": _qty(lines, h.VK_FLOW),
+                            "recon_route_km": _qty(lines, h.VK_RECON_ROUTE)}
+    params["key_volumes"] = {code: {k: v for k, v in items.items() if v}
+                             for code, items in keys.items()}
+    return TzParams.from_dict(params).to_dict()
+
+
+def demo_cost(code: str, volume_lines, maximum: float | None, distance_km: float | None):
+    """Расчёт себестоимости раздела на ДЕМОНСТРАЦИОННЫХ ставках так, как его сохраняет
+    страница «4. Минимальный бюджет»: (ввод для `save_cost_calc`, итог). Нормы — seed
+    (`data/norms`, без локального слоя: в демо его нет). Состав партии — правило
+    раздела; минимум выше максимума не подгоняется."""
+    import math
+
+    from core.cost import SharedCosts, load_cost_norms, reduction, suggested_party
+    from modules.geology import cost as geology_cost
+    from modules.geology.module import DRILLING_VOLUME_KEY_PREFIX
+
+    shared = SharedCosts.from_dict(DEMO_SHARED)
+    if code == "geology":
+        norms = load_cost_norms(geology_cost.NORMS_NAME, use_local=False)
+        meters = sum(line.qty or 0 for key, line in volume_lines.items()
+                     if key.startswith(DRILLING_VOLUME_KEY_PREFIX))
+        rate = norms["drilling_rate_pm_per_brigade_month"].value
+        brigades = max(1, math.ceil(meters / (rate * GEOLOGY_FIELD_MONTHS)))
+        # Трал буровых считается по расстоянию до объекта; не задано (Автодорога) — трала
+        # в расчёте нет (0 единиц): доставка техники — в общих затратах объекта.
+        inputs = geology_cost.CostInputs(
+            brigades=brigades, itr=brigades, drivers=brigades, cooks=1, office_staff=2,
+            office_months=DEMO_OFFICE_MONTHS["geology"], mileage_uaz=DEMO_MILEAGE_UAZ["geology"],
+            lowboy_units=None if distance_km else 0, **DEMO_GEOLOGY)
+        result = geology_cost.compute_cost(inputs, meters, distance_km=distance_km, norms=norms,
+                                           shared=shared)
+        red = reduction(result, maximum)
+        saved = {**inputs.to_dict(), "_shared": shared.to_dict()}
+        summary = {"meters": meters, "cost": result.cost, "complete": result.complete,
+                   "missing": list(result.missing), "fot": result.fot, "direct": result.direct,
+                   "maximum": red.maximum, "coefficient": red.coefficient, "calc_date": DATE}
+    else:
+        from app.ui_minimum import PARTY_MODULES
+
+        module = PARTY_MODULES[code]
+        norms = load_cost_norms(module.SPEC.norms_name, use_local=False)
+        volume = module.volume_from_sheet(volume_lines)
+        months = DEMO_FIELD_MONTHS[code]
+        # объём нормы 0 (экология Автодороги: радиационного обследования нет) — правило
+        # численности не работает; минимальный состав, как у раздела без нормы (ИГМИ)
+        party = suggested_party(module.SPEC, volume, months, norms) or {
+            "field_lead": 1, "field_engineer": 1, "office_engineer": 1}
+        own = {**{f.name: 0 for f in module.SPEC.fields if f.kind == "int"}, **party,
+               "office_months": DEMO_OFFICE_MONTHS[code], "mileage_uaz": DEMO_MILEAGE_UAZ[code]}
+        if not module.SPEC.rate_norm_key or volume <= 0:
+            own["field_months"] = months  # нормы выработки нет / объём нормы 0 — срок вводится
+        values = {**DEMO_COMMON, **own}
+        extra = {"samples": module.samples_from_sheet(volume_lines)} if code == "ecology" else {}
+        result = module.compute_cost(values, volume, norms, shared, **extra)
+        red = reduction(result, maximum)
+        saved = {**values, "_shared": shared.to_dict()}
+        summary = {"volume": volume, "cost": result.cost, "complete": result.complete,
+                   "missing": list(result.missing), "fot": result.fot, "direct": result.direct,
+                   "maximum": red.maximum, "coefficient": red.coefficient, "calc_date": DATE}
+    from app.ui_minimum import RATES_NOTE_KEY
+
+    saved[RATES_NOTE_KEY] = RATES_NOTE
+    return saved, summary, result, red
+
+
 # --- запись базы ------------------------------------------------------------------
 
 
@@ -228,24 +438,41 @@ def build_demo(db_path: Path | str = DEFAULT_DB, book=None) -> dict[str, dict[st
     db_path.parent.mkdir(parents=True, exist_ok=True)
     for suffix in ("", "-wal", "-shm"):
         Path(f"{db_path}{suffix}").unlink(missing_ok=True)
+    from core.object_data import CalculationContext
+    from core.pricing import calculate_total_with_vat
+
     store = SmetaStore(db_path)
     book = book or ReferenceBook()
     road, karier = (openpyxl.load_workbook(p, data_only=True) for p in (ROAD_XLSX, KARIER_XLSX))
     objects = (
-        (ROAD_NAME, road_object(road), road_sections(road)),
-        (KARIER_NAME, karier_object(karier), karier_sections(karier)),
+        (ROAD_NAME, "road", road_object(road), road_sections(road)),
+        (KARIER_NAME, "karier", karier_object(karier), karier_sections(karier)),
     )
     saved: dict[str, dict[str, int]] = {}
-    for name, obj, sections in objects:
+    for name, kind, obj, sections in objects:
         saved[name] = {}
+        # Сначала все разделы считаются (ведомость → смета): параметры ТЗ берутся из их
+        # подтверждённых ведомостей, а данные объекта у всех версий расчёта — одни.
+        sessions = {}
         for code, (module, volumes, estimate, volume_edits, estimate_edits, customs) in sections.items():
-            session, _context, _warnings = staged_session(
+            sessions[code], _context, _warnings = staged_session(
                 module, obj, book, volumes, estimate, volume_edits, estimate_edits, customs,
                 reason="как в эталонном листе")
+        info = {k: v for k, v in OBJECT_INFO[kind].items() if k != "stage"}
+        tz = demo_tz(kind, {code: dict(s.result("volumes").lines) for code, s in sessions.items()},
+                     {code: s.inputs.get("volumes", {}) for code, s in sessions.items()})
+        full = dataclasses.replace(obj, **info, tz=tz)
+        context = CalculationContext(book, full)
+        for code, session in sessions.items():
             parent = None
             for stage in session.staged.stages:
                 parent = store.save_version(name, code, parent, session.result(stage.key),
-                                            calc_date=DATE, object_data=obj.to_dict())
+                                            calc_date=DATE, object_data=full.to_dict())
+            estimate_lines = dict(session.result("estimate").lines)
+            maximum = calculate_total_with_vat(estimate_lines, context, code, DATE).indexed_total
+            inputs, summary, _result, _red = demo_cost(
+                code, dict(session.result("volumes").lines), maximum, full.distance_km)
+            store.save_cost_calc(parent, code, inputs, summary)
             saved[name][code] = parent
     return saved
 

@@ -1051,7 +1051,8 @@ def render_reduction_inputs(aggregator, object_min=None):
     — в данных объекта (`ObjectData.price_reductions`): живут в сессии браузера
     и идут в выгрузку Excel; в базу смет попадают только при следующем
     подтверждении этапа или черновике любого раздела (своей кнопки сохранения
-    нет); открытие версии их не меняет (`apply_object_data`). Под целевой ценой —
+    нет); открытие версии одного раздела их не меняет, открытие всего расчёта —
+    подставляет сохранённые с ним (`apply_object_data`). Под целевой ценой —
     одно предупреждение «цена ниже минимума» по минимуму объекта (`object_min` —
     `ui_target.object_minimum`, все разделы бюджета с посчитанной себестоимостью)."""
     with block("Ввод: снижение цены (коэффициенты)"):
@@ -1065,7 +1066,8 @@ def render_reduction_inputs(aggregator, object_min=None):
             "Где хранятся коэффициенты: пока открыта программа (в этой вкладке) и в выгрузке "
             "Excel сводного бюджета. Отдельной кнопки сохранения нет: в базу смет они попадут "
             "вместе с данными объекта при следующем подтверждении сметы (или черновике) любого "
-            "раздела. Открытие сохранённой версии раздела их не меняет."
+            "раздела. Открытие сохранённой версии одного раздела их не меняет; «Открыть все "
+            "разделы расчёта» на странице «Версии» подставляет снижение, сохранённое с расчётом."
         )
         cols = st.columns(3)
         keys = [*MODULES, "budget"]
@@ -2280,9 +2282,10 @@ def object_widget_value(field, value):
     return value or ""
 
 
-# Поля данных объекта, которые открытие версии/черновика не трогает: решение о
-# цене всего объекта (страница «5. Сводный бюджет»), а не данные версии одного
+# Поля данных объекта, которые открытие версии/черновика одного раздела не трогает:
+# решение о цене всего объекта (страница «5. Сводный бюджет»), а не данные версии одного
 # раздела (ревью сводной №1: иначе открытие любой версии молча сбрасывало снижение).
+# Открытие всего расчёта («Открыть все разделы расчёта») их подставляет — доводка 09.11.
 PRICE_DECISION_FIELDS = ("price_reductions", "show_mobilization")
 
 
@@ -2324,15 +2327,32 @@ def price_decision_notice(restored):
             + "; ".join(parts) + ".")
 
 
-def apply_object_data(data):
+def apply_price_decision(restored):
+    """Коэффициенты снижения и флаг мобилизации из данных объекта — в виджеты
+    страницы 5 (до их отрисовки). Только при открытии всего расчёта (все
+    разделы объекта сразу): это и есть решение по цене объекта, сохранённое с ним.
+    Не заданный коэффициент — 1 (без снижения). Сообщение прошлого подбора под
+    целевую цену убирается — оно было про другой расчёт."""
+    for key in REDUCTION_LABELS:
+        st.session_state[reduction_key(key)] = float(restored.reduction(key))
+    st.session_state["obj_show_mobilization"] = bool(restored.show_mobilization)
+    st.session_state.pop(TARGET_FIT_KEY, None)
+
+
+def apply_object_data(data, price_decision=False):
     """Данные объекта из сохранённой версии/черновика — в виджеты блока
     (до их отрисовки на этом прогоне). Коэффициенты снижения и флаг
-    мобилизации (`PRICE_DECISION_FIELDS`) не трогаются — остаются текущие;
-    если в версии были свои и отличаются — сообщение на экране."""
+    мобилизации (`PRICE_DECISION_FIELDS`) при открытии одного раздела не
+    трогаются — остаются текущие; если в версии были свои и отличаются —
+    сообщение на экране. `price_decision=True` (открытие всего расчёта) —
+    они тоже берутся из версии (`apply_price_decision`)."""
     restored = ObjectData.from_dict(data)
     for warning in restored.load_warnings():
         set_open_warning(warning)
-    set_open_warning(price_decision_notice(restored))
+    if price_decision:
+        apply_price_decision(restored)
+    else:
+        set_open_warning(price_decision_notice(restored))
     for field in OBJECT_FIELDS:
         if field.name in PRICE_DECISION_FIELDS:
             continue
@@ -2942,15 +2962,20 @@ def process_pending_loads(refs, store):
         for code in MODULES:
             if code not in version_ids:
                 clear_module_input(code)
+        # Снижение цены — решение по всему объекту: при открытии всего расчёта оно
+        # берётся из него (у разделов одного расчёта данные объекта общие; берём
+        # последний раздел — как и прочие поля объекта, они пишутся каждым по очереди).
         for loaded in loads:
-            apply_version(loaded)
+            apply_version(loaded, price_decision=True)
         st.session_state["module_choice"] = loads[0].module_code
         if all(loaded.calc_date is not None for loaded in loads):
-            when = f"дата расчёта {st.session_state['calc_date']:%d.%m.%Y}."
+            when = f"дата расчёта {st.session_state['calc_date']:%d.%m.%Y}"
         else:
-            when = "дата расчёта сохранена не у всех версий — проверьте её в боковой панели."
+            when = "дата расчёта сохранена не у всех версий — проверьте её в боковой панели"
+        reductions = ObjectData.from_dict(loads[-1].object_data).price_reductions
         st.session_state["flash_calc_date"] = (
-            f"Открыт расчёт «{name}», разделов: {len(loads)}; {when}"
+            f"Открыт расчёт «{name}», разделов: {len(loads)}; {when}; снижение цены — из "
+            f"расчёта: {describe_reductions(reductions)}."
         )
         return PAGE_BUDGET
     # --- черновик: версии, от которых продолжали, + ввод этапа ---
@@ -3015,17 +3040,21 @@ def read_version(store, version_id):
     )
 
 
-def apply_version(loaded):
+def apply_version(loaded, price_decision=False):
     """Прочитанная версия → раздел в этой вкладке: подтверждённые этапы, имя
-    расчёта, данные объекта, дата расчёта, ввод себестоимости, формы этапов."""
+    расчёта, данные объекта, дата расчёта, ввод себестоимости, формы этапов.
+    `price_decision` — см. `apply_object_data` (открытие всего расчёта)."""
     loaded.session.version_id = loaded.version_id  # следующие подтверждения — от этой версии
     st.session_state.staged_sessions[loaded.module_code] = loaded.session
     st.session_state["module_choice"] = loaded.module_code
     st.session_state["save_smeta_name"] = loaded.name
     # Версия без данных объекта / без расчёта себестоимости — поля
     # очищаются: иначе смета пересчиталась бы с данными другого объекта.
-    apply_object_data(loaded.object_data)
+    apply_object_data(loaded.object_data, price_decision=price_decision)
     from app import ui_minimum
+
+    ui_minimum.set_rates_note(loaded.module_code,
+                              loaded.cost[0].get(ui_minimum.RATES_NOTE_KEY) if loaded.cost else None)
 
     if loaded.module_code == "geology":
         apply_cost_inputs(loaded.cost[0] if loaded.cost is not None else None)
@@ -3077,6 +3106,9 @@ def clear_module_input(module_code):
         form_key, key_code = stage_form_keys(module_code, staged, stage)
         st.session_state.form_data_by_module.pop(form_key, None)
         reset_form_widgets(key_code, stage.fields)
+    from app import ui_minimum
+
+    ui_minimum.set_rates_note(module_code, None)
 
 
 # Находка ревью №4 (25.10.2026): у экологии коэффициент вида пробы (0,9 / 1,2)
